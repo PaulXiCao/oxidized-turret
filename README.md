@@ -19,3 +19,15 @@ Install VSCode + Extensions:
 - [Native Debug](https://marketplace.visualstudio.com/items?itemName=webfreak.debug)
 
 In main.rs file: click debug at line 0. You can also use breakpoints.
+
+## WebAssembly - wasm
+
+Great documentation available [here](https://rustwasm.github.io/docs/book/game-of-life/introduction.html).
+
+Summary:
+- Setup: Install wasm-pack, npm
+```bash
+curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+npm install npm@latest -g
+```
+- Build wasm binary and js bindings: `wasm-pack build`
