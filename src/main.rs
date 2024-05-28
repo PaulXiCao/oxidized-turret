@@ -1,43 +1,16 @@
-struct Game {
-    board: Board,
-    players: Vec<Box<dyn Player>>,
-    level: i32,
-    phase: Phase,
-}
+// use mod
 
-struct Board {}
-
-trait Player {
-    fn do_something(self);
-}
-
-struct NoOpPlayer {}
-
-impl Player for NoOpPlayer {
-    fn do_something(self) {}
-}
-
-enum Phase {
-    StartOfLevel,
-    CreepsRoaming,
-    EndOfLevel,
-}
-
-impl Game {
-    fn new() -> Self {
-        Self {
-            board: Board {},
-            players: vec![Box::new(NoOpPlayer {})],
-            level: 0,
-            phase: Phase::StartOfLevel,
-        }
-    }
-    fn run(&mut self) {}
-    fn print_result(&mut self) {}
-}
+use oxidized_turret::Game;
 
 fn main() {
     let mut game = Game::new();
-    game.run();
-    game.print_result();
+    for frame in 0..4 {
+        println!("step: {}", frame);
+        let state = game.get_state();
+        println!("state: {:#?}", state);
+        let moves = game.get_possible_moves();
+        println!("moves: {:#?}", moves);
+        println!();
+        std::thread::sleep(std::time::Duration::from_millis(300));
+    }
 }
