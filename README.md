@@ -30,4 +30,7 @@ Summary:
 curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 npm install npm@latest -g
 ```
-- Build wasm binary and js bindings: `wasm-pack build`
+- Build wasm binary and js bindings:
+```bash
+wasm-pack build --out-dir web/src/js/wasm_pack_output/
+```
