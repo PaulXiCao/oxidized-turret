@@ -32,5 +32,6 @@ const server = http.createServer((req, res) => {
   stream.pipe(res);
 });
 
-server.listen(8080);
-console.log("Listening on port 8088...");
+const port = 8080;
+server.listen(port);
+console.log("Listening on port " + port + "...");
