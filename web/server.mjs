@@ -4,6 +4,7 @@ import fs from "node:fs";
 const MIME_TYPES = {
   html: "text/html; charset=utf-8",
   js: "application/javascript",
+  wasm: "application/wasm",
 };
 
 const server = http.createServer((req, res) => {

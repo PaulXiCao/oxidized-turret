@@ -1,3 +1,18 @@
+import * as wasm from "../wasm/oxidized_turret_bg.js";
+
+// expose JavaScript functions to WASM imports
+const importObject = {
+  "./oxidized_turret_bg.js": wasm,
+};
+WebAssembly.instantiateStreaming(
+  fetch("/wasm/oxidized_turret_bg.wasm"),
+  importObject
+).then((obj) => {
+  // expose WASM exports to JavaScript bindings
+  wasm.__wbg_set_wasm(obj.instance.exports);
+  window.wasm = wasm;
+});
+
 const canvas = document.getElementById("canvas");
 
 /** @type CanvasRenderingContext2D */

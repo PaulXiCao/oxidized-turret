@@ -32,5 +32,5 @@ npm install npm@latest -g
 ```
 - Build wasm binary and js bindings:
 ```bash
-wasm-pack build --out-dir web/src/js/wasm_pack_output/
+wasm-pack build --out-dir web/src/wasm
 ```
