@@ -4,7 +4,7 @@ import * as wasm from "../wasm/oxidized_turret_bg.js";
 const importObject = {
   "./oxidized_turret_bg.js": wasm,
 };
-WebAssembly.instantiateStreaming(
+await WebAssembly.instantiateStreaming(
   fetch("/wasm/oxidized_turret_bg.wasm"),
   importObject
 ).then((obj) => {
@@ -12,6 +12,8 @@ WebAssembly.instantiateStreaming(
   wasm.__wbg_set_wasm(obj.instance.exports);
   window.wasm = wasm;
 });
+
+const game = wasm.Game.new();
 
 const canvas = document.getElementById("canvas");
 
@@ -55,15 +57,12 @@ function drawCreep(creep) {
 
   ctx.fillStyle = "green";
   ctx.fillRect(creep.x - 10, creep.y - 12, 20 * healthPercentage, 2);
-  ctx.fillStyle = "red";
-  ctx.fillRect(
-    creep.x - 10 + 20 * healthPercentage,
-    creep.y - 12,
-    20 * (1 - healthPercentage),
-    2
-  );
 }
 
+/**
+ *
+ * @param {wasm.State} state
+ */
 function drawState(state) {
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
@@ -79,60 +78,9 @@ function drawState(state) {
   }
 }
 
-const state = {
-  turrets: [
-    { x: 50, y: 100, rotation: 0, lastShot: 0 },
-    { x: 300, y: 100, rotation: 0, lastShot: 0 },
-  ],
-  creeps: [{ x: 0, y: 200, health: 10, maxHealth: 10 }],
-  particles: [],
-};
-
-function updateState(time, state) {
-  for (const creep of state.creeps) {
-    creep.x += 1;
-    if (creep.x > canvas.width) {
-      creep.x = -10;
-    }
-  }
-
-  for (const turret of state.turrets) {
-    const targetCreep = state.creeps[0];
-    const dx = targetCreep.x - turret.x;
-    const dy = targetCreep.y - turret.y;
-    const d = Math.sqrt(dx ** 2 + dy ** 2);
-    turret.rotation = Math.acos(dx / d);
-    if (time > turret.lastShot + 1000) {
-      turret.lastShot = time;
-      state.particles.push({
-        x: turret.x + 15 * Math.cos(turret.rotation),
-        y: turret.y + 15 * Math.sin(turret.rotation),
-        visible: true,
-        target: targetCreep,
-      });
-    }
-  }
-
-  for (const particle of state.particles) {
-    if (!particle.visible) {
-      continue;
-    }
-    const dx = particle.target.x - particle.x;
-    const dy = particle.target.y - particle.y;
-    const d = Math.sqrt(dx ** 2 + dy ** 2);
-    if (d < 5) {
-      particle.visible = false;
-      particle.target.health = Math.max(particle.target.health - 1, 0);
-    } else {
-      particle.x += (dx / d) * 5;
-      particle.y += (dy / d) * 5;
-    }
-  }
-}
-
 function loop(time) {
-  updateState(time, state);
-  drawState(state);
+  game.update_state();
+  drawState(game.get_state());
   requestAnimationFrame(loop);
 }
 
