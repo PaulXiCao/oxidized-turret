@@ -34,3 +34,29 @@ npm install npm@latest -g
 ```bash
 wasm-pack build --out-dir web/src/wasm
 ```
+
+## ToDo
+
+### Rust engine
+- [ ] remove creeps when they die
+- [ ] tower targeting logic (with range)
+- [ ] towers block creeps
+- [ ] path finding for creeps
+- [ ] you loose health if creep reaches target
+- [ ] you win if all creeps of a level are dead
+- [ ] game phases (build, animation)
+- [ ] build towers
+
+- [ ] multiplayer (hard!)
+- [ ] tech tree
+
+### js frontend
+- [ ] Zoom and Drag
+- [ ] Engine Coordinates to Pixel coordinates
+- [ ] fullscreen + resize
+- [ ] display score and health
+- [ ] display path of creeps
+- [ ] display tower range on click
+
+- [ ] higher frame rates than 60 FPS
+
