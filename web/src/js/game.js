@@ -14,49 +14,159 @@ await WebAssembly.instantiateStreaming(
 });
 
 const game = wasm.Game.new();
+const state = game.get_state();
+const gameWidth = state.board_dimension_x;
+const gameHeight = state.board_dimension_y;
 
 const canvas = document.getElementById("canvas");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener("resize", function () {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+let scale = 1.0;
+let offsetX = 300;
+let offsetY = 150;
+
+window.addEventListener("wheel", (event) => {
+  scale = Math.min(Math.max(scale + 0.02 * Math.sign(event.deltaY), 0.25), 2);
+});
+
+let startMoveX = 0;
+let startMoveY = 0;
+let startOffsetX = 0;
+let startOffsetY = 0;
+
+function mousemove(event) {
+  offsetX = startOffsetX + event.clientX - startMoveX;
+  offsetY = startOffsetY + event.clientY - startMoveY;
+}
+
+window.addEventListener("mousedown", (event) => {
+  startMoveX = event.clientX;
+  startMoveY = event.clientY;
+  startOffsetX = offsetX;
+  startOffsetY = offsetY;
+  window.addEventListener("mousemove", mousemove);
+});
+
+window.addEventListener("mouseup", (event) => {
+  window.removeEventListener("mousemove", mousemove);
+});
+
+const TURRET_SIZE = 30;
+const PARTICLE_SIZE = 5;
+const CREEP_SIZE = 20;
+const HEALTH_BAR_HEIGHT = 2;
 
 /** @type CanvasRenderingContext2D */
 const ctx = canvas.getContext("2d");
 
-function drawTurret(turret) {
-  ctx.strokeStyle = "white";
-  ctx.strokeRect(turret.x - 15, turret.y - 15, 30, 30);
-
-  ctx.strokeStyle = "white";
-  ctx.beginPath();
-  ctx.moveTo(turret.x, turret.y);
-  ctx.lineTo(
-    turret.x + 15 * Math.cos(turret.rotation),
-    turret.y + 15 * Math.sin(turret.rotation)
+function strokeRect({ x, y, width, height, color }) {
+  ctx.strokeStyle = color;
+  ctx.strokeRect(
+    x / scale + offsetX,
+    y / scale + offsetY,
+    width / scale,
+    height / scale
   );
+}
+
+function fillRect({ x, y, width, height, color }) {
+  ctx.fillStyle = color;
+  ctx.fillRect(
+    x / scale + offsetX,
+    y / scale + offsetY,
+    width / scale,
+    height / scale
+  );
+}
+
+function drawLine({ start, end, color }) {
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(start.x / scale + offsetX, start.y / scale + offsetY);
+  ctx.lineTo(end.x / scale + offsetX, end.y / scale + offsetY);
   ctx.stroke();
 }
+
+function fillCircle({ x, y, r, color }) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x / scale + offsetX, y / scale + offsetY, r / scale, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function fillTriangle({ x, y, size, color }) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(
+    (x - size / 2) / scale + offsetX,
+    (y + size / 2) / scale + offsetY
+  );
+  ctx.lineTo(x / scale + offsetX, (y - size / 2) / scale + offsetY);
+  ctx.lineTo(
+    (x + size / 2) / scale + offsetX,
+    (y + size / 2) / scale + offsetY
+  );
+  ctx.lineTo(
+    (x - size / 2) / scale + offsetX,
+    (y + size / 2) / scale + offsetY
+  );
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawTurret(turret) {
+  strokeRect({
+    x: turret.x,
+    y: turret.y,
+    width: TURRET_SIZE,
+    height: TURRET_SIZE,
+  });
+
+  drawLine({
+    start: { x: turret.x + TURRET_SIZE / 2, y: turret.y + TURRET_SIZE / 2 },
+    end: {
+      x:
+        turret.x +
+        TURRET_SIZE / 2 +
+        (TURRET_SIZE / 2) * Math.cos(turret.rotation),
+      y:
+        turret.y +
+        TURRET_SIZE / 2 +
+        (TURRET_SIZE / 2) * Math.sin(turret.rotation),
+    },
+    color: "white",
+  });
+}
+
 function drawParticle(particle) {
   if (!particle.visible) {
     return;
   }
-  ctx.fillStyle = "silver";
-  ctx.strokeStyle = "silver";
-  ctx.beginPath();
-  ctx.arc(particle.x, particle.y, 5, 0, 2 * Math.PI);
-  ctx.fill();
+  fillCircle({
+    x: particle.x,
+    y: particle.y,
+    r: PARTICLE_SIZE,
+    color: "silver",
+  });
 }
 function drawCreep(creep) {
-  ctx.fillStyle = "yellow";
-  ctx.beginPath();
-  ctx.moveTo(creep.x - 10, creep.y + 10);
-  ctx.lineTo(creep.x, creep.y - 10);
-  ctx.lineTo(creep.x + 10, creep.y + 10);
-  ctx.lineTo(creep.x - 10, creep.y + 10);
-  ctx.closePath();
-  ctx.fill();
+  fillTriangle({ x: creep.x, y: creep.y, size: CREEP_SIZE, color: "yellow" });
 
   const healthPercentage = creep.health / creep.maxHealth;
 
-  ctx.fillStyle = "green";
-  ctx.fillRect(creep.x - 10, creep.y - 12, 20 * healthPercentage, 2);
+  fillRect({
+    x: creep.x - CREEP_SIZE / 2,
+    y: creep.y - CREEP_SIZE / 2 - HEALTH_BAR_HEIGHT,
+    width: CREEP_SIZE * healthPercentage,
+    height: HEALTH_BAR_HEIGHT,
+    color: "green",
+  });
 }
 
 /**
@@ -64,8 +174,10 @@ function drawCreep(creep) {
  * @param {wasm.State} state
  */
 function drawState(state) {
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+  ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+  ctx.strokeStyle = "white";
+  strokeRect({ x: 0, y: 0, width: gameWidth, height: gameHeight });
 
   for (const turret of state.turrets) {
     drawTurret(turret);
