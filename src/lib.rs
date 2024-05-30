@@ -1,5 +1,6 @@
-mod utils;
+mod masked_vec;
 
+use masked_vec::{MaskedVec, MaskedVecRef};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -29,12 +30,15 @@ impl Game {
             maxHealth: 10,
         };
 
+        let mut creeps: MaskedVec<Creep> = MaskedVec::new();
+        creeps.add(creep0);
+
         Game {
             state: State {
                 board_dimension_x: 600,
                 board_dimension_y: 400,
                 turrets: vec![turret0, turret1],
-                creeps: vec![creep0],
+                creeps,
                 particles: vec![],
                 tick: 0,
             },
@@ -42,8 +46,15 @@ impl Game {
         }
     }
 
-    pub fn get_state(&self) -> State {
-        self.state.clone()
+    pub fn get_state(&self) -> ExternalState {
+        let state = &self.state;
+        ExternalState {
+            board_dimension_x: state.board_dimension_x,
+            board_dimension_y: state.board_dimension_y,
+            turrets: state.turrets.clone(),
+            particles: state.particles.clone(),
+            creeps: self.state.creeps.iter().map(|x| *x).collect(),
+        }
     }
 
     pub fn update_state(&mut self) {
@@ -56,7 +67,25 @@ impl Game {
         }
 
         for turret in self.state.turrets.iter_mut() {
-            let target_creep = self.state.creeps.get(0).unwrap();
+            let target_creep_item_option = self.state.creeps.enumerate().next();
+            if Option::is_none(&target_creep_item_option) {
+                self.state.creeps.add(Creep {
+                    x: 0.0,
+                    y: 200.0,
+                    health: 4,
+                    maxHealth: 10,
+                });
+                self.state.creeps.add(Creep {
+                    x: 50.0,
+                    y: 200.0,
+                    health: 4,
+                    maxHealth: 10,
+                });
+                continue;
+            }
+            let target_creep_item = target_creep_item_option.unwrap();
+            let target_creep = target_creep_item.data;
+
             let dx = target_creep.x - turret.x as f32;
             let dy = target_creep.y - turret.y as f32;
             turret.rotation = dy.atan2(dx);
@@ -66,25 +95,32 @@ impl Game {
                 let y = turret.y as f32 + 15.0 * turret.rotation.sin();
 
                 self.state.particles.push(Particle {
-                    x: x,
-                    y: y,
+                    x,
+                    y,
                     visible: true,
-                    target: 0,
+                    target: target_creep_item.item_ref.clone(),
                 });
             }
         }
 
         for particle in self.state.particles.iter_mut().filter(|p| p.visible) {
-            let target_creep = self.state.creeps.get_mut(particle.target).unwrap();
+            let target_creep_option = self.state.creeps.get_mut(particle.target);
+            if Option::is_none(&target_creep_option) {
+                particle.visible = false;
+                continue;
+            }
+
+            let target_creep = target_creep_option.unwrap();
             let dx = target_creep.x - particle.x;
             let dy = target_creep.y - particle.y;
             let d = (dx.powi(2) + dy.powi(2)).sqrt();
             if d < 5.0 {
                 particle.visible = false;
-                target_creep.health = match target_creep.health {
-                    0 => 0,
-                    _ => target_creep.health - 1,
-                };
+                if target_creep.health == 1 {
+                    self.state.creeps.remove(particle.target.clone());
+                } else {
+                    target_creep.health -= 1;
+                }
             } else {
                 particle.x += (dx / d) * 5.0;
                 particle.y += (dy / d) * 5.0;
@@ -94,13 +130,23 @@ impl Game {
     }
 }
 #[wasm_bindgen(getter_with_clone)]
-#[derive(Clone, Debug)]
-pub struct State {
+#[derive(Clone)]
+pub struct ExternalState {
     // upper-left corner (0,0), lower-right corner (nx-1, nx-1)
     pub board_dimension_x: u32, // no. of grid points in x-direction
     pub board_dimension_y: u32, // no. of grid points in y-direction
     pub turrets: Vec<Turret>,
     pub creeps: Vec<Creep>,
+    pub particles: Vec<Particle>,
+}
+
+#[derive(Clone)]
+pub struct State {
+    // upper-left corner (0,0), lower-right corner (nx-1, nx-1)
+    pub board_dimension_x: u32, // no. of grid points in x-direction
+    pub board_dimension_y: u32, // no. of grid points in y-direction
+    pub turrets: Vec<Turret>,
+    pub creeps: masked_vec::MaskedVec<Creep>,
     pub particles: Vec<Particle>,
     tick: u32,
 }
@@ -124,7 +170,7 @@ pub struct Turret {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Particle {
     pub x: f32,
     pub y: f32,
@@ -132,7 +178,7 @@ pub struct Particle {
 
     // todo: remove "pub". should not leave api. this reference should not be needed for drawing. passing references
     // through api seems odd / hard to do in rust?
-    target: usize,
+    target: MaskedVecRef,
 }
 
 //
