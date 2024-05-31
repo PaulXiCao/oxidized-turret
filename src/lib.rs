@@ -14,26 +14,27 @@ pub struct Game {
 impl Game {
     pub fn new() -> Self {
         let turret0 = Turret {
-            pos: GridPosition { x: 50, y: 100 },
+            pos: GridPosition { x: 2, y: 3 },
             rotation: 0.0,
             last_shot: 0,
         };
         let turret1 = Turret {
-            pos: GridPosition { x: 300, y: 100 },
+            pos: GridPosition { x: 10, y: 3 },
             rotation: 0.0,
             last_shot: 0,
         };
 
         Game {
             state: State {
-                board_dimension_x: 600,
-                board_dimension_y: 400,
+                board_dimension_x: 20,
+                board_dimension_y: 15,
                 creep_spawn: FloatPosition { x: 0.0, y: 200.0 },
                 creep_goal: FloatPosition { x: 600.0, y: 200.0 },
                 last_spawn: 0,
                 turrets: vec![turret0, turret1],
                 creeps: RecycledList::new(),
                 particles: RecycledList::new(),
+                cell_length: 30.0,
                 tick: 0,
             },
         }
@@ -47,6 +48,7 @@ impl Game {
             turrets: state.turrets.clone(),
             particles: state.particles.iter().map(|x| *x).collect(),
             creeps: state.creeps.iter().map(|x| *x).collect(),
+            cell_length: state.cell_length,
         }
     }
 
@@ -81,13 +83,13 @@ impl Game {
             let target_creep_item = target_creep_item_option.unwrap();
             let target_creep = target_creep_item.data;
 
-            let dx = target_creep.pos.x - turret.pos.x as f32;
-            let dy = target_creep.pos.y - turret.pos.y as f32;
+            let dx = target_creep.pos.x - turret.pos.x as f32 * self.state.cell_length;
+            let dy = target_creep.pos.y - turret.pos.y as f32 * self.state.cell_length;
             turret.rotation = dy.atan2(dx);
             if self.state.tick > turret.last_shot + 60 {
                 turret.last_shot = self.state.tick;
-                let x = turret.pos.x as f32 + 15.0 * turret.rotation.cos();
-                let y = turret.pos.y as f32 + 15.0 * turret.rotation.sin();
+                let x = turret.pos.x as f32 * self.state.cell_length + 15.0 * turret.rotation.cos();
+                let y = turret.pos.y as f32 * self.state.cell_length + 15.0 * turret.rotation.sin();
 
                 self.state.particles.add(Particle {
                     pos: FloatPosition { x, y },
@@ -139,6 +141,7 @@ pub struct ExternalState {
     pub turrets: Vec<Turret>,
     pub creeps: Vec<Creep>,
     pub particles: Vec<Particle>,
+    pub cell_length: f32,
 }
 
 #[derive(Clone)]
@@ -152,6 +155,7 @@ pub struct State {
     pub turrets: Vec<Turret>,
     pub creeps: RecycledList<Creep>,
     pub particles: RecycledList<Particle>,
+    pub cell_length: f32,
     tick: u32,
 }
 
@@ -245,6 +249,6 @@ fn create_forfeiting_move() -> Move {
 fn create_tower_building_move(x: u32, y: u32) -> Move {
     Move {
         type_: MoveType::BuildTower,
-        build_tower_data: Some(GridPosition { x: x, y: y }),
+        build_tower_data: Some(GridPosition { x, y }),
     }
 }

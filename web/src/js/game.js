@@ -31,28 +31,24 @@ const PARTICLE_SIZE = 5;
 const CREEP_SIZE = 20;
 const HEALTH_BAR_HEIGHT = 2;
 
-function drawTurret(turret) {
+function drawTurret(turret, cellLength) {
+  const x = turret.pos.x * cellLength;
+  const y = turret.pos.y * cellLength;
   strokeRect({
-    x: turret.pos.x,
-    y: turret.pos.y,
+    x,
+    y,
     width: TURRET_SIZE,
     height: TURRET_SIZE,
   });
 
   drawLine({
     start: {
-      x: turret.pos.x + TURRET_SIZE / 2,
-      y: turret.pos.y + TURRET_SIZE / 2,
+      x: x + TURRET_SIZE / 2,
+      y: y + TURRET_SIZE / 2,
     },
     end: {
-      x:
-        turret.pos.x +
-        TURRET_SIZE / 2 +
-        (TURRET_SIZE / 2) * Math.cos(turret.rotation),
-      y:
-        turret.pos.y +
-        TURRET_SIZE / 2 +
-        (TURRET_SIZE / 2) * Math.sin(turret.rotation),
+      x: x + TURRET_SIZE / 2 + (TURRET_SIZE / 2) * Math.cos(turret.rotation),
+      y: y + TURRET_SIZE / 2 + (TURRET_SIZE / 2) * Math.sin(turret.rotation),
     },
     color: "white",
   });
@@ -86,8 +82,13 @@ function drawCreep(creep) {
   });
 }
 
-function drawMap() {
-  strokeRect({ x: 0, y: 0, width: gameWidth, height: gameHeight });
+function drawMap(cellLength) {
+  strokeRect({
+    x: 0,
+    y: 0,
+    width: gameWidth * cellLength,
+    height: gameHeight * cellLength,
+  });
 }
 
 /**
@@ -96,10 +97,10 @@ function drawMap() {
  */
 function drawState(state) {
   clear();
-  drawMap();
+  drawMap(state.cell_length);
 
   for (const turret of state.turrets) {
-    drawTurret(turret);
+    drawTurret(turret, state.cell_length);
   }
   for (const creep of state.creeps) {
     drawCreep(creep);
