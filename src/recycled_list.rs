@@ -1,32 +1,32 @@
 #[derive(Clone, Copy)]
-pub struct MaskedVecRef {
+pub struct RecycledListRef {
     id: u32,
     index: usize,
 }
 
 #[derive(Clone)]
-pub struct MaskedVecItem<T> {
-    pub item_ref: MaskedVecRef,
+pub struct RecycledListItem<T> {
+    pub item_ref: RecycledListRef,
     pub data: T,
 }
 
 #[derive(Clone)]
-pub struct MaskedVec<T> {
+pub struct RecycledList<T> {
     current_id: u32,
-    items: Vec<MaskedVecItem<T>>,
+    items: Vec<RecycledListItem<T>>,
     free_list: Vec<usize>,
 }
 
-impl<T> MaskedVec<T> {
+impl<T> RecycledList<T> {
     pub fn new() -> Self {
-        MaskedVec {
+        RecycledList {
             current_id: 0,
             items: vec![],
             free_list: vec![],
         }
     }
 
-    pub fn get_mut(&mut self, item_ref: MaskedVecRef) -> Option<&mut T> {
+    pub fn get_mut(&mut self, item_ref: RecycledListRef) -> Option<&mut T> {
         let item = self.items.get_mut(item_ref.index);
         match item {
             Some(c) => {
@@ -39,7 +39,7 @@ impl<T> MaskedVec<T> {
         }
     }
 
-    pub fn remove(&mut self, item_ref: MaskedVecRef) {
+    pub fn remove(&mut self, item_ref: RecycledListRef) {
         let item = self.items.get_mut(item_ref.index);
         match item {
             Some(item) => {
@@ -52,25 +52,25 @@ impl<T> MaskedVec<T> {
         }
     }
 
-    pub fn add(&mut self, data: T) -> MaskedVecRef {
+    pub fn add(&mut self, data: T) -> RecycledListRef {
         self.current_id += 1;
         if self.free_list.is_empty() {
-            let item_ref = MaskedVecRef {
+            let item_ref = RecycledListRef {
                 id: self.current_id,
                 index: self.items.len(),
             };
-            self.items.push(MaskedVecItem {
+            self.items.push(RecycledListItem {
                 item_ref: item_ref.clone(),
                 data,
             });
             return item_ref;
         } else {
             let free_index = self.free_list.pop().unwrap();
-            let item_ref = MaskedVecRef {
+            let item_ref = RecycledListRef {
                 id: self.current_id,
                 index: free_index,
             };
-            self.items[free_index] = MaskedVecItem {
+            self.items[free_index] = RecycledListItem {
                 item_ref: item_ref.clone(),
                 data,
             };
@@ -89,14 +89,14 @@ impl<T> MaskedVec<T> {
         self.enumerate().map(|x| &x.data)
     }
 
-    pub fn enumerate(&self) -> impl Iterator<Item = &MaskedVecItem<T>> {
+    pub fn enumerate(&self) -> impl Iterator<Item = &RecycledListItem<T>> {
         self.items.iter().filter(|x| x.item_ref.id != 0)
     }
 }
 
 #[test]
 fn test_test() {
-    let mut v: MaskedVec<String> = MaskedVec::new();
+    let mut v: RecycledList<String> = RecycledList::new();
     let ref1 = v.add(String::from("test1"));
     let ref2 = v.add(String::from("test2"));
 

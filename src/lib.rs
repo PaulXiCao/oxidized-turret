@@ -1,6 +1,6 @@
-mod masked_vec;
+mod recycled_list;
 
-use masked_vec::{MaskedVec, MaskedVecRef};
+use recycled_list::{RecycledList, RecycledListRef};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -30,7 +30,7 @@ impl Game {
             maxHealth: 10,
         };
 
-        let mut creeps: MaskedVec<Creep> = MaskedVec::new();
+        let mut creeps: RecycledList<Creep> = RecycledList::new();
         creeps.add(creep0);
 
         Game {
@@ -146,7 +146,7 @@ pub struct State {
     pub board_dimension_x: u32, // no. of grid points in x-direction
     pub board_dimension_y: u32, // no. of grid points in y-direction
     pub turrets: Vec<Turret>,
-    pub creeps: masked_vec::MaskedVec<Creep>,
+    pub creeps: RecycledList<Creep>,
     pub particles: Vec<Particle>,
     tick: u32,
 }
@@ -178,7 +178,7 @@ pub struct Particle {
 
     // todo: remove "pub". should not leave api. this reference should not be needed for drawing. passing references
     // through api seems odd / hard to do in rust?
-    target: MaskedVecRef,
+    target: RecycledListRef,
 }
 
 //
