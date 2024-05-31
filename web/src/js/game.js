@@ -67,7 +67,7 @@ function drawParticle(particle) {
 function drawCreep(creep) {
   fillTriangle({ x: creep.x, y: creep.y, size: CREEP_SIZE, color: "yellow" });
 
-  const healthPercentage = creep.health / creep.maxHealth;
+  const healthPercentage = creep.health / creep.max_health;
 
   fillRect({
     x: creep.x - CREEP_SIZE / 2,

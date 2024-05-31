@@ -59,7 +59,7 @@ impl Game {
                 x: self.state.creep_spawn.x,
                 y: self.state.creep_spawn.y,
                 health: 4,
-                maxHealth: 10,
+                max_health: 10,
             });
         }
 
@@ -170,7 +170,7 @@ pub struct Creep {
     pub x: f32,
     pub y: f32,
     pub health: u32,
-    pub maxHealth: u32,
+    pub max_health: u32,
 }
 
 #[wasm_bindgen]
@@ -252,8 +252,8 @@ pub struct Move {
 #[wasm_bindgen]
 #[derive(Debug)]
 pub struct GridPosition {
-    x: u32,
-    y: u32,
+    pub x: u32,
+    pub y: u32,
 }
 
 fn create_forfeiting_move() -> Move {
