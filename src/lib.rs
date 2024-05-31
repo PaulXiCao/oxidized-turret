@@ -1,8 +1,9 @@
+mod path;
 mod recycled_list;
 mod utils;
 
 use recycled_list::{RecycledList, RecycledListRef};
-use utils::{distance, FloatPosition, GridPosition};
+use utils::{distance, to_float_position, FloatPosition, GridPosition};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -28,8 +29,8 @@ impl Game {
             state: State {
                 board_dimension_x: 20,
                 board_dimension_y: 15,
-                creep_spawn: FloatPosition { x: 0.0, y: 200.0 },
-                creep_goal: FloatPosition { x: 600.0, y: 200.0 },
+                creep_spawn: GridPosition { x: 0, y: 9 },
+                creep_goal: GridPosition { x: 19, y: 9 },
                 last_spawn: 0,
                 turrets: vec![turret0, turret1],
                 creeps: RecycledList::new(),
@@ -56,7 +57,7 @@ impl Game {
         if self.state.tick - self.state.last_spawn > 60 {
             self.state.last_spawn = self.state.tick;
             self.state.creeps.add(Creep {
-                pos: self.state.creep_spawn,
+                pos: to_float_position(self.state.creep_spawn, self.state.cell_length),
                 health: 4,
                 max_health: 10,
             });
@@ -66,7 +67,10 @@ impl Game {
         for creep_item in self.state.creeps.enumerate_mut() {
             let creep = &mut creep_item.data;
             creep.pos.x += 1.0;
-            let d = distance(self.state.creep_goal, creep.pos);
+            let d = distance(
+                to_float_position(self.state.creep_goal, self.state.cell_length),
+                creep.pos,
+            );
             if d < 5.0 {
                 creeps_to_remove.push(creep_item.item_ref.clone());
             }
@@ -149,8 +153,8 @@ pub struct State {
     // upper-left corner (0,0), lower-right corner (nx-1, nx-1)
     pub board_dimension_x: u32, // no. of grid points in x-direction
     pub board_dimension_y: u32, // no. of grid points in y-direction
-    pub creep_spawn: FloatPosition,
-    pub creep_goal: FloatPosition,
+    pub creep_spawn: GridPosition,
+    pub creep_goal: GridPosition,
     last_spawn: u32,
     pub turrets: Vec<Turret>,
     pub creeps: RecycledList<Creep>,
