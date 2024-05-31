@@ -78,19 +78,20 @@ impl<T> RecycledList<T> {
         }
     }
 
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-        self.items
-            .iter_mut()
-            .filter(|x| x.item_ref.id != 0)
-            .map(|x| &mut x.data)
+    pub fn enumerate(&self) -> impl Iterator<Item = &RecycledListItem<T>> {
+        self.items.iter().filter(|x| x.item_ref.id != 0)
+    }
+
+    pub fn enumerate_mut(&mut self) -> impl Iterator<Item = &mut RecycledListItem<T>> {
+        self.items.iter_mut().filter(|x| x.item_ref.id != 0)
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.enumerate().map(|x| &x.data)
     }
 
-    pub fn enumerate(&self) -> impl Iterator<Item = &RecycledListItem<T>> {
-        self.items.iter().filter(|x| x.item_ref.id != 0)
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
+        self.enumerate_mut().map(|x| &mut x.data)
     }
 }
 

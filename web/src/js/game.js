@@ -56,9 +56,6 @@ function drawTurret(turret) {
 }
 
 function drawParticle(particle) {
-  if (!particle.visible) {
-    return;
-  }
   fillCircle({
     x: particle.x,
     y: particle.y,

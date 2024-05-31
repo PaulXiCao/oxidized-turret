@@ -39,7 +39,7 @@ impl Game {
                 board_dimension_y: 400,
                 turrets: vec![turret0, turret1],
                 creeps,
-                particles: vec![],
+                particles: RecycledList::new(),
                 tick: 0,
             },
             // time: Instant::now(),
@@ -52,8 +52,8 @@ impl Game {
             board_dimension_x: state.board_dimension_x,
             board_dimension_y: state.board_dimension_y,
             turrets: state.turrets.clone(),
-            particles: state.particles.clone(),
-            creeps: self.state.creeps.iter().map(|x| *x).collect(),
+            particles: state.particles.iter().map(|x| *x).collect(),
+            creeps: state.creeps.iter().map(|x| *x).collect(),
         }
     }
 
@@ -94,19 +94,21 @@ impl Game {
                 let x = turret.x as f32 + 15.0 * turret.rotation.cos();
                 let y = turret.y as f32 + 15.0 * turret.rotation.sin();
 
-                self.state.particles.push(Particle {
+                self.state.particles.add(Particle {
                     x,
                     y,
-                    visible: true,
                     target: target_creep_item.item_ref.clone(),
                 });
             }
         }
 
-        for particle in self.state.particles.iter_mut().filter(|p| p.visible) {
+        let mut particles_to_remove: Vec<RecycledListRef> = vec![];
+
+        for particle_item in self.state.particles.enumerate_mut() {
+            let particle = &mut particle_item.data;
             let target_creep_option = self.state.creeps.get_mut(particle.target);
             if Option::is_none(&target_creep_option) {
-                particle.visible = false;
+                particles_to_remove.push(particle_item.item_ref);
                 continue;
             }
 
@@ -115,7 +117,7 @@ impl Game {
             let dy = target_creep.y - particle.y;
             let d = (dx.powi(2) + dy.powi(2)).sqrt();
             if d < 5.0 {
-                particle.visible = false;
+                particles_to_remove.push(particle_item.item_ref);
                 if target_creep.health == 1 {
                     self.state.creeps.remove(particle.target.clone());
                 } else {
@@ -125,6 +127,10 @@ impl Game {
                 particle.x += (dx / d) * 5.0;
                 particle.y += (dy / d) * 5.0;
             }
+        }
+
+        for particle_to_remove in particles_to_remove.iter() {
+            self.state.particles.remove(particle_to_remove.clone());
         }
         self.state.tick += 1;
     }
@@ -147,7 +153,7 @@ pub struct State {
     pub board_dimension_y: u32, // no. of grid points in y-direction
     pub turrets: Vec<Turret>,
     pub creeps: RecycledList<Creep>,
-    pub particles: Vec<Particle>,
+    pub particles: RecycledList<Particle>,
     tick: u32,
 }
 
@@ -170,11 +176,10 @@ pub struct Turret {
 }
 
 #[wasm_bindgen]
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct Particle {
     pub x: f32,
     pub y: f32,
-    pub visible: bool,
 
     // todo: remove "pub". should not leave api. this reference should not be needed for drawing. passing references
     // through api seems odd / hard to do in rust?
