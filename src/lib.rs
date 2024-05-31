@@ -56,8 +56,7 @@ impl Game {
         if self.state.tick - self.state.last_spawn > 60 {
             self.state.last_spawn = self.state.tick;
             self.state.creeps.add(Creep {
-                x: self.state.creep_spawn.x,
-                y: self.state.creep_spawn.y,
+                pos: self.state.creep_spawn,
                 health: 4,
                 max_health: 10,
             });
@@ -66,14 +65,8 @@ impl Game {
         let mut creeps_to_remove: Vec<RecycledListRef> = vec![];
         for creep_item in self.state.creeps.enumerate_mut() {
             let creep = &mut creep_item.data;
-            creep.x += 1.0;
-            let d = distance(
-                self.state.creep_goal,
-                FloatPosition {
-                    x: creep.x,
-                    y: creep.y,
-                },
-            );
+            creep.pos.x += 1.0;
+            let d = distance(self.state.creep_goal, creep.pos);
             if d < 5.0 {
                 creeps_to_remove.push(creep_item.item_ref.clone());
             }
@@ -90,8 +83,8 @@ impl Game {
             let target_creep_item = target_creep_item_option.unwrap();
             let target_creep = target_creep_item.data;
 
-            let dx = target_creep.x - turret.x as f32;
-            let dy = target_creep.y - turret.y as f32;
+            let dx = target_creep.pos.x - turret.x as f32;
+            let dy = target_creep.pos.y - turret.y as f32;
             turret.rotation = dy.atan2(dx);
             if self.state.tick > turret.last_shot + 60 {
                 turret.last_shot = self.state.tick;
@@ -117,8 +110,8 @@ impl Game {
             }
 
             let target_creep = target_creep_option.unwrap();
-            let dx = target_creep.x - particle.x;
-            let dy = target_creep.y - particle.y;
+            let dx = target_creep.pos.x - particle.x;
+            let dy = target_creep.pos.y - particle.y;
             let d = (dx.powi(2) + dy.powi(2)).sqrt();
             if d < 5.0 {
                 particles_to_remove.push(particle_item.item_ref);
@@ -165,16 +158,15 @@ pub struct State {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Copy)]
 pub struct Creep {
-    pub x: f32,
-    pub y: f32,
+    pub pos: FloatPosition,
     pub health: u32,
     pub max_health: u32,
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Turret {
     pub x: i32,
     pub y: i32,

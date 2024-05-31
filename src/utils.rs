@@ -1,3 +1,6 @@
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
 #[derive(Clone, Copy)]
 pub struct FloatPosition {
     pub x: f32,
