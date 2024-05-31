@@ -40,9 +40,8 @@ wasm-pack build --out-dir web/src/wasm
 ### Rust engine
 
 - [x] remove creeps when they die
+- [ ] path finding for creeps (towers block creeps)
 - [ ] tower targeting logic (with range)
-- [ ] towers block creeps
-- [ ] path finding for creeps
 - [ ] you loose health if creep reaches target
 - [ ] you win if all creeps of a level are dead
 - [ ] game phases (build, animation)

@@ -1,6 +1,8 @@
 mod recycled_list;
+mod utils;
 
 use recycled_list::{RecycledList, RecycledListRef};
+use utils::{distance, FloatPosition};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -23,22 +25,16 @@ impl Game {
             rotation: 0.0,
             last_shot: 0,
         };
-        let creep0 = Creep {
-            x: 0.0,
-            y: 200.0,
-            health: 10,
-            maxHealth: 10,
-        };
-
-        let mut creeps: RecycledList<Creep> = RecycledList::new();
-        creeps.add(creep0);
 
         Game {
             state: State {
                 board_dimension_x: 600,
                 board_dimension_y: 400,
+                creep_spawn: FloatPosition { x: 0.0, y: 200.0 },
+                creep_goal: FloatPosition { x: 600.0, y: 200.0 },
+                last_spawn: 0,
                 turrets: vec![turret0, turret1],
-                creeps,
+                creeps: RecycledList::new(),
                 particles: RecycledList::new(),
                 tick: 0,
             },
@@ -57,29 +53,38 @@ impl Game {
     }
 
     pub fn update_state(&mut self) {
-        for creep in self.state.creeps.iter_mut() {
+        if self.state.tick - self.state.last_spawn > 60 {
+            self.state.last_spawn = self.state.tick;
+            self.state.creeps.add(Creep {
+                x: self.state.creep_spawn.x,
+                y: self.state.creep_spawn.y,
+                health: 4,
+                maxHealth: 10,
+            });
+        }
+
+        let mut creeps_to_remove: Vec<RecycledListRef> = vec![];
+        for creep_item in self.state.creeps.enumerate_mut() {
+            let creep = &mut creep_item.data;
             creep.x += 1.0;
-            let xMax = self.state.board_dimension_x as f32;
-            if creep.x > xMax {
-                creep.x = xMax - creep.x;
+            let d = distance(
+                self.state.creep_goal,
+                FloatPosition {
+                    x: creep.x,
+                    y: creep.y,
+                },
+            );
+            if d < 5.0 {
+                creeps_to_remove.push(creep_item.item_ref.clone());
             }
+        }
+        for creep_to_remove in creeps_to_remove.iter() {
+            self.state.creeps.remove(creep_to_remove.clone());
         }
 
         for turret in self.state.turrets.iter_mut() {
             let target_creep_item_option = self.state.creeps.enumerate().next();
             if Option::is_none(&target_creep_item_option) {
-                self.state.creeps.add(Creep {
-                    x: 0.0,
-                    y: 200.0,
-                    health: 4,
-                    maxHealth: 10,
-                });
-                self.state.creeps.add(Creep {
-                    x: 50.0,
-                    y: 200.0,
-                    health: 4,
-                    maxHealth: 10,
-                });
                 continue;
             }
             let target_creep_item = target_creep_item_option.unwrap();
@@ -150,6 +155,9 @@ pub struct State {
     // upper-left corner (0,0), lower-right corner (nx-1, nx-1)
     pub board_dimension_x: u32, // no. of grid points in x-direction
     pub board_dimension_y: u32, // no. of grid points in y-direction
+    pub creep_spawn: FloatPosition,
+    pub creep_goal: FloatPosition,
+    last_spawn: u32,
     pub turrets: Vec<Turret>,
     pub creeps: RecycledList<Creep>,
     pub particles: RecycledList<Particle>,
