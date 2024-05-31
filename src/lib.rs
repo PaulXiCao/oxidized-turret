@@ -2,7 +2,7 @@ mod recycled_list;
 mod utils;
 
 use recycled_list::{RecycledList, RecycledListRef};
-use utils::{distance, FloatPosition};
+use utils::{distance, FloatPosition, GridPosition};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -14,14 +14,12 @@ pub struct Game {
 impl Game {
     pub fn new() -> Self {
         let turret0 = Turret {
-            x: 50,
-            y: 100,
+            pos: GridPosition { x: 50, y: 100 },
             rotation: 0.0,
             last_shot: 0,
         };
         let turret1 = Turret {
-            x: 300,
-            y: 100,
+            pos: GridPosition { x: 300, y: 100 },
             rotation: 0.0,
             last_shot: 0,
         };
@@ -83,13 +81,13 @@ impl Game {
             let target_creep_item = target_creep_item_option.unwrap();
             let target_creep = target_creep_item.data;
 
-            let dx = target_creep.pos.x - turret.x as f32;
-            let dy = target_creep.pos.y - turret.y as f32;
+            let dx = target_creep.pos.x - turret.pos.x as f32;
+            let dy = target_creep.pos.y - turret.pos.y as f32;
             turret.rotation = dy.atan2(dx);
             if self.state.tick > turret.last_shot + 60 {
                 turret.last_shot = self.state.tick;
-                let x = turret.x as f32 + 15.0 * turret.rotation.cos();
-                let y = turret.y as f32 + 15.0 * turret.rotation.sin();
+                let x = turret.pos.x as f32 + 15.0 * turret.rotation.cos();
+                let y = turret.pos.y as f32 + 15.0 * turret.rotation.sin();
 
                 self.state.particles.add(Particle {
                     pos: FloatPosition { x, y },
@@ -168,8 +166,7 @@ pub struct Creep {
 #[wasm_bindgen]
 #[derive(Clone)]
 pub struct Turret {
-    pub x: i32,
-    pub y: i32,
+    pub pos: GridPosition,
     pub rotation: f32, // orientation/angle in RAD
     last_shot: u32,
 }
@@ -232,18 +229,10 @@ pub enum MoveType {
 }
 
 #[wasm_bindgen]
-#[derive(Debug)]
 pub struct Move {
     type_: MoveType,
 
     build_tower_data: Option<GridPosition>,
-}
-
-#[wasm_bindgen]
-#[derive(Debug)]
-pub struct GridPosition {
-    pub x: u32,
-    pub y: u32,
 }
 
 fn create_forfeiting_move() -> Move {

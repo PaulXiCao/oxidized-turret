@@ -2,6 +2,13 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
+pub struct GridPosition {
+    pub x: u32,
+    pub y: u32,
+}
+
+#[wasm_bindgen]
+#[derive(Clone, Copy)]
 pub struct FloatPosition {
     pub x: f32,
     pub y: f32,

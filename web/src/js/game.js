@@ -33,21 +33,24 @@ const HEALTH_BAR_HEIGHT = 2;
 
 function drawTurret(turret) {
   strokeRect({
-    x: turret.x,
-    y: turret.y,
+    x: turret.pos.x,
+    y: turret.pos.y,
     width: TURRET_SIZE,
     height: TURRET_SIZE,
   });
 
   drawLine({
-    start: { x: turret.x + TURRET_SIZE / 2, y: turret.y + TURRET_SIZE / 2 },
+    start: {
+      x: turret.pos.x + TURRET_SIZE / 2,
+      y: turret.pos.y + TURRET_SIZE / 2,
+    },
     end: {
       x:
-        turret.x +
+        turret.pos.x +
         TURRET_SIZE / 2 +
         (TURRET_SIZE / 2) * Math.cos(turret.rotation),
       y:
-        turret.y +
+        turret.pos.y +
         TURRET_SIZE / 2 +
         (TURRET_SIZE / 2) * Math.sin(turret.rotation),
     },
