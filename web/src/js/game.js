@@ -82,22 +82,25 @@ function drawCreep(creep) {
   });
 }
 
-function drawMap(cellLength) {
+/**
+ * @param {wasm.ExternalState} state
+ */
+function drawMap(state) {
   strokeRect({
     x: 0,
     y: 0,
-    width: gameWidth * cellLength,
-    height: gameHeight * cellLength,
+    width: state.board_dimension_x * state.cell_length,
+    height: state.board_dimension_y * state.cell_length,
+    color: "white",
   });
 }
 
 /**
- *
- * @param {wasm.State} state
+ * @param {wasm.ExternalState} state
  */
 function drawState(state) {
   clear();
-  drawMap(state.cell_length);
+  drawMap(state);
 
   for (const turret of state.turrets) {
     drawTurret(turret, state.cell_length);
