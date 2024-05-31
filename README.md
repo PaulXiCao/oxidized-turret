@@ -39,7 +39,7 @@ wasm-pack build --out-dir web/src/wasm
 
 ### Rust engine
 
-- [ ] remove creeps when they die
+- [x] remove creeps when they die
 - [ ] tower targeting logic (with range)
 - [ ] towers block creeps
 - [ ] path finding for creeps

@@ -42,7 +42,6 @@ impl Game {
                 particles: RecycledList::new(),
                 tick: 0,
             },
-            // time: Instant::now(),
         }
     }
 
