@@ -92,8 +92,7 @@ impl Game {
                 let y = turret.y as f32 + 15.0 * turret.rotation.sin();
 
                 self.state.particles.add(Particle {
-                    x,
-                    y,
+                    pos: FloatPosition { x, y },
                     target: target_creep_item.item_ref.clone(),
                 });
             }
@@ -110,9 +109,8 @@ impl Game {
             }
 
             let target_creep = target_creep_option.unwrap();
-            let dx = target_creep.pos.x - particle.x;
-            let dy = target_creep.pos.y - particle.y;
-            let d = (dx.powi(2) + dy.powi(2)).sqrt();
+
+            let d = distance(target_creep.pos, particle.pos);
             if d < 5.0 {
                 particles_to_remove.push(particle_item.item_ref);
                 if target_creep.health == 1 {
@@ -121,8 +119,10 @@ impl Game {
                     target_creep.health -= 1;
                 }
             } else {
-                particle.x += (dx / d) * 5.0;
-                particle.y += (dy / d) * 5.0;
+                let dx = target_creep.pos.x - particle.pos.x;
+                let dy = target_creep.pos.y - particle.pos.y;
+                particle.pos.x += (dx / d) * 5.0;
+                particle.pos.y += (dy / d) * 5.0;
             }
         }
 
@@ -177,9 +177,7 @@ pub struct Turret {
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
 pub struct Particle {
-    pub x: f32,
-    pub y: f32,
-
+    pub pos: FloatPosition,
     // todo: remove "pub". should not leave api. this reference should not be needed for drawing. passing references
     // through api seems odd / hard to do in rust?
     target: RecycledListRef,

@@ -57,8 +57,8 @@ function drawTurret(turret) {
 
 function drawParticle(particle) {
   fillCircle({
-    x: particle.x,
-    y: particle.y,
+    x: particle.pos.x,
+    y: particle.pos.y,
     r: PARTICLE_SIZE,
     color: "silver",
   });
