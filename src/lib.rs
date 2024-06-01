@@ -3,7 +3,7 @@ mod recycled_list;
 mod utils;
 
 use recycled_list::{RecycledList, RecycledListRef};
-use utils::{distance, to_float_position, FloatPosition, GridPosition};
+use utils::{distance, to_creep_position, to_float_position, FloatPosition, GridPosition};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -46,7 +46,7 @@ impl Game {
 
         let mut creep_path: Vec<FloatPosition> = vec![];
         for x in state.creep_spawn.x..state.creep_goal.x + 1 {
-            creep_path.push(to_float_position(
+            creep_path.push(to_creep_position(
                 GridPosition {
                     x,
                     y: state.creep_spawn.y,
@@ -79,7 +79,7 @@ impl Game {
         if self.state.tick - self.state.last_spawn > 60 {
             self.state.last_spawn = self.state.tick;
             self.state.creeps.add(Creep {
-                pos: to_float_position(self.state.creep_spawn, self.state.cell_length),
+                pos: to_creep_position(self.state.creep_spawn, self.state.cell_length),
                 health: 4,
                 max_health: 10,
             });
@@ -90,7 +90,7 @@ impl Game {
             let creep = &mut creep_item.data;
             creep.pos.x += 1.0;
             let d = distance(
-                to_float_position(self.state.creep_goal, self.state.cell_length),
+                to_creep_position(self.state.creep_goal, self.state.cell_length),
                 creep.pos,
             );
             if d < 5.0 {

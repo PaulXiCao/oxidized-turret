@@ -27,6 +27,13 @@ pub fn to_float_position(pos: GridPosition, factor: f32) -> FloatPosition {
     }
 }
 
+pub fn to_creep_position(pos: GridPosition, factor: f32) -> FloatPosition {
+    FloatPosition {
+        x: (pos.x as f32 + 0.5) * factor,
+        y: (pos.y as f32 + 0.5) * factor,
+    }
+}
+
 pub fn to_grid_position(pos: FloatPosition, factor: f32) -> GridPosition {
     GridPosition {
         x: (pos.x / factor).floor() as u32,
