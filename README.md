@@ -54,6 +54,10 @@ wasm-pack build --out-dir web/src/wasm
 - [x] build towers
 - [ ] multiplayer (hard!)
 - [ ] tech tree
+- [ ] creeps have multiple intermediate goals
+- [ ] creep types, e.g. speed, health, flying, hero (not effected by spells - good idea: spells), splitting (e.g. https://infinitode-2.fandom.com/wiki/Enemies)
+- [ ] ingame currency
+- [ ] turret types, e.g. splash, sniper, freeze, aoe, poison, anti-air (e.g. https://infinitode-2.fandom.com/wiki/Towers)
 
 ### js frontend
 
@@ -66,6 +70,7 @@ wasm-pack build --out-dir web/src/wasm
 - [ ] display tower range on click
 - [ ] higher frame rates than 60 FPS
 - [ ] support mobile devices (drag, pinch zoom, ...)
+- [ ] remove towers
 
 ### Other
 
