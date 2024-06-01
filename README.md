@@ -59,3 +59,8 @@ wasm-pack build --out-dir web/src/wasm
 - [ ] display score and health
 - [ ] display tower range on click
 - [ ] higher frame rates than 60 FPS
+- [ ] support mobile devices (drag, pinch zoom, ...)
+
+### Other
+
+- [ ] configure github pages deployment
