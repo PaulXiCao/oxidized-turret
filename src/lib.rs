@@ -288,7 +288,7 @@ impl Game {
                 true
             }
             MoveType::BuildTower => {
-                let pos = match move_.build_tower_data {
+                let _pos = match move_.build_tower_data {
                     None => return false,
                     Some(pos) => pos,
                 };

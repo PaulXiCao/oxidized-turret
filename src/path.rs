@@ -54,6 +54,7 @@ fn test_find_path() {
         board_dimension_y: 15,
         creep_spawn: GridPosition { x: 0, y: 0 },
         creep_goal: GridPosition { x: 0, y: 1 },
+        creep_path: vec![],
         last_spawn: 0,
         turrets: RecycledList::new(),
         creeps: RecycledList::new(),
