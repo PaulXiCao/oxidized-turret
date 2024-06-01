@@ -29,7 +29,7 @@ wasm-bindgen-test = "0.3.34"
 [profile.release]
 opt-level = "z" # Tell `rustc` to optimize for small code size.
 overflow-checks = true
-debug = 0
+debug = true
 strip = "symbols"
 debug-assertions = false
 panic = "abort"
