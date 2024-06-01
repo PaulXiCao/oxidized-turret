@@ -19,6 +19,12 @@ const uiState = new Proxy(
   }
 );
 
+window.addEventListener("keyup", function shortcutHandler(event) {
+  if (event.key === "1") {
+    uiState.selectedTurret = uiState.selectedTurret === null ? 0 : null;
+  }
+});
+
 let mousedownObject = null;
 
 export const ui = {
@@ -47,6 +53,14 @@ export const ui = {
       color: "black",
     });
     uiArt.drawTurret({ pos: { x: 10, y: 10 }, rotation: 0 }, 30);
+    uiCanvas.fillCircle({ x: 10, y: 40, r: 7, color: "gray" });
+    uiCanvas.fillText({
+      x: 7,
+      y: 44,
+      fontSize: 12,
+      text: "1",
+      color: "black",
+    });
   },
 
   /**

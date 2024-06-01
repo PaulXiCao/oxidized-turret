@@ -116,6 +116,12 @@ export class Canvas {
     this.ctx.fill();
   }
 
+  fillText({ x, y, text, color, fontSize, maxWidth = undefined }) {
+    this.ctx.fillStyle = color;
+    this.ctx.font = `bold ${fontSize}px Courier`;
+    this.ctx.fillText(text, x, y, maxWidth);
+  }
+
   fillTriangle({ x, y, size, color }) {
     this.ctx.fillStyle = color;
     this.ctx.beginPath();
