@@ -16,6 +16,8 @@ pub struct Game {
 #[wasm_bindgen]
 impl Game {
     pub fn new() -> Self {
+        let mut turrets: RecycledList<Turret> = RecycledList::new();
+
         let turret0 = Turret {
             pos: GridPosition { x: 2, y: 3 },
             rotation: 0.0,
@@ -27,6 +29,9 @@ impl Game {
             last_shot: 0,
         };
 
+        turrets.add(turret0);
+        turrets.add(turret1);
+
         Game {
             state: State {
                 board_dimension_x: 20,
@@ -34,7 +39,7 @@ impl Game {
                 creep_spawn: GridPosition { x: 0, y: 9 },
                 creep_goal: GridPosition { x: 19, y: 9 },
                 last_spawn: 0,
-                turrets: vec![turret0, turret1],
+                turrets,
                 creeps: RecycledList::new(),
                 particles: RecycledList::new(),
                 cell_length: 30.0,
@@ -79,7 +84,7 @@ impl Game {
 
     pub fn build_tower(&mut self, x: f32, y: f32) {
         let grid_pos = to_grid_position(FloatPosition { x, y }, self.state.cell_length);
-        self.state.turrets.push(Turret {
+        self.state.turrets.add(Turret {
             pos: grid_pos,
             rotation: 0.0,
             last_shot: self.state.tick,
@@ -194,7 +199,7 @@ pub struct State {
     pub creep_spawn: GridPosition,
     pub creep_goal: GridPosition,
     last_spawn: u32,
-    pub turrets: Vec<Turret>,
+    pub turrets: RecycledList<Turret>,
     pub creeps: RecycledList<Creep>,
     pub particles: RecycledList<Particle>,
     pub cell_length: f32,
