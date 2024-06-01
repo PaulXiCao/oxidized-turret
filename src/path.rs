@@ -1,42 +1,56 @@
-use crate::{utils, State};
-
-use utils::GridPosition;
+use crate::utils::{distance, to_float_position, GridPosition};
+use crate::State;
 
 use pathfinding::prelude::astar;
 
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-struct Pos(i32, i32);
+pub fn find_path(state: &State) -> Option<(Vec<GridPosition>, u32)> {
+    let goal = state.creep_goal;
+    astar(
+        &state.creep_spawn,
+        |p| -> Vec<(GridPosition, u32)> {
+            let x = p.x;
+            let y = p.y;
 
-impl Pos {
-    fn distance(&self, other: &Pos) -> u32 {
-        (self.0.abs_diff(other.0) + self.1.abs_diff(other.1)) as u32
-    }
+            let mut successors: Vec<GridPosition> = vec![
+                GridPosition { x: x + 0, y: y + 1 },
+                GridPosition { x: x + 1, y: y + 0 },
+            ];
 
-    fn successors(&self) -> Vec<(Pos, u32)> {
-        let &Pos(x, y) = self;
-        vec![
-            Pos(x + 1, y + 2),
-            Pos(x + 1, y - 2),
-            Pos(x - 1, y + 2),
-            Pos(x - 1, y - 2),
-            Pos(x + 2, y + 1),
-            Pos(x + 2, y - 1),
-            Pos(x - 2, y + 1),
-            Pos(x - 2, y - 1),
-        ]
-        .into_iter()
-        .map(|p| (p, 1))
-        .collect()
-    }
+            if x > 0 {
+                successors.push(GridPosition { x: x - 1, y: y + 0 });
+            }
+            if y > 0 {
+                successors.push(GridPosition { x: x + 0, y: y - 1 });
+            }
+
+            successors.into_iter().map(|p| (p, 1)).collect()
+        },
+        |p| {
+            distance(
+                to_float_position(goal, state.cell_length),
+                to_float_position(*p, state.cell_length),
+            ) as u32
+                / 2
+        },
+        |p| *p == goal,
+    )
 }
 
-// pub fn find_path(state: &State) {
-//     let GOAL = state.creep_goal;
-//     let result = astar(
-//         &Pos(1, 1),
-//         |p| p.successors(),
-//         |p| p.distance(&GOAL) / 3,
-//         |p| *p == GOAL,
-//     );
-//     assert_eq!(result.expect("no path found").1, 4);
-// }
+#[test]
+fn test_find_path() {
+    use crate::recycled_list::RecycledList;
+    let state = State {
+        board_dimension_x: 20,
+        board_dimension_y: 15,
+        creep_spawn: GridPosition { x: 0, y: 0 },
+        creep_goal: GridPosition { x: 0, y: 1 },
+        last_spawn: 0,
+        turrets: RecycledList::new(),
+        creeps: RecycledList::new(),
+        particles: RecycledList::new(),
+        cell_length: 30.0,
+        tick: 0,
+    };
+
+    assert!(Option::is_some(&find_path(&state)));
+}

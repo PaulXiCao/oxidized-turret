@@ -6,6 +6,7 @@ mod utils;
 
 use entities::*;
 use external::{ExternalState, ExternalTurret, TurretRef};
+use path::find_path;
 use recycled_list::{RecycledList, RecycledListRef};
 use utils::{
     distance, to_creep_position, to_float_position, to_grid_position, FloatPosition, GridPosition,
@@ -55,16 +56,12 @@ impl Game {
     pub fn get_state(&self) -> ExternalState {
         let state = &self.state;
 
-        let mut creep_path: Vec<FloatPosition> = vec![];
-        for x in state.creep_spawn.x..state.creep_goal.x + 1 {
-            creep_path.push(to_creep_position(
-                GridPosition {
-                    x,
-                    y: state.creep_spawn.y,
-                },
-                state.cell_length,
-            ));
-        }
+        let creep_path: Vec<FloatPosition> = find_path(state)
+            .unwrap()
+            .0
+            .into_iter()
+            .map(|x| to_creep_position(x, state.cell_length))
+            .collect();
 
         ExternalState {
             board_dimension_x: state.board_dimension_x as f32 * state.cell_length,
