@@ -44,21 +44,31 @@ impl Game {
     pub fn get_state(&self) -> ExternalState {
         let state = &self.state;
 
-        let mut creep_path: Vec<GridPosition> = vec![];
+        let mut creep_path: Vec<FloatPosition> = vec![];
         for x in state.creep_spawn.x..state.creep_goal.x + 1 {
-            creep_path.push(GridPosition {
-                x,
-                y: state.creep_spawn.y,
-            });
+            creep_path.push(to_float_position(
+                GridPosition {
+                    x,
+                    y: state.creep_spawn.y,
+                },
+                state.cell_length,
+            ));
         }
 
         ExternalState {
-            board_dimension_x: state.board_dimension_x,
-            board_dimension_y: state.board_dimension_y,
-            creep_spawn: state.creep_spawn,
-            creep_goal: state.creep_goal,
+            board_dimension_x: state.board_dimension_x as f32 * state.cell_length,
+            board_dimension_y: state.board_dimension_y as f32 * state.cell_length,
+            creep_spawn: to_float_position(state.creep_spawn, state.cell_length),
+            creep_goal: to_float_position(state.creep_goal, state.cell_length),
             creep_path,
-            turrets: state.turrets.clone(),
+            turrets: state
+                .turrets
+                .iter()
+                .map(|x| ExternalTurret {
+                    pos: to_float_position(x.pos, state.cell_length),
+                    rotation: x.rotation,
+                })
+                .collect(),
             particles: state.particles.iter().map(|x| *x).collect(),
             creeps: state.creeps.iter().map(|x| *x).collect(),
             cell_length: state.cell_length,
@@ -152,12 +162,12 @@ impl Game {
 #[derive(Clone)]
 pub struct ExternalState {
     // upper-left corner (0,0), lower-right corner (nx-1, nx-1)
-    pub board_dimension_x: u32, // no. of grid points in x-direction
-    pub board_dimension_y: u32, // no. of grid points in y-direction
-    pub creep_spawn: GridPosition,
-    pub creep_goal: GridPosition,
-    pub creep_path: Vec<GridPosition>,
-    pub turrets: Vec<Turret>,
+    pub board_dimension_x: f32, // no. of grid points in x-direction
+    pub board_dimension_y: f32, // no. of grid points in y-direction
+    pub creep_spawn: FloatPosition,
+    pub creep_goal: FloatPosition,
+    pub creep_path: Vec<FloatPosition>,
+    pub turrets: Vec<ExternalTurret>,
     pub creeps: Vec<Creep>,
     pub particles: Vec<Particle>,
     pub cell_length: f32,
@@ -186,12 +196,18 @@ pub struct Creep {
     pub max_health: u32,
 }
 
-#[wasm_bindgen]
 #[derive(Clone)]
 pub struct Turret {
     pub pos: GridPosition,
     pub rotation: f32, // orientation/angle in RAD
     last_shot: u32,
+}
+
+#[wasm_bindgen]
+#[derive(Clone)]
+pub struct ExternalTurret {
+    pub pos: FloatPosition,
+    pub rotation: f32, // orientation/angle in RAD
 }
 
 #[wasm_bindgen]

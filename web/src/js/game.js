@@ -24,29 +24,29 @@ await WebAssembly.instantiateStreaming(
 
 const game = wasm.Game.new();
 
-const TURRET_SIZE = 30;
 const PARTICLE_SIZE = 5;
 const CREEP_SIZE = 20;
 const HEALTH_BAR_HEIGHT = 2;
 
-function drawTurret(turret, cellLength) {
-  const x = turret.pos.x * cellLength;
-  const y = turret.pos.y * cellLength;
+function drawTurret(turret, turretSize) {
+  const x = turret.pos.x;
+  const y = turret.pos.y;
   strokeRect({
     x,
     y,
-    width: TURRET_SIZE,
-    height: TURRET_SIZE,
+    width: turretSize,
+    height: turretSize,
   });
 
+  const cannonLength = turretSize / 2;
   drawLine({
     start: {
-      x: x + TURRET_SIZE / 2,
-      y: y + TURRET_SIZE / 2,
+      x: x + cannonLength,
+      y: y + cannonLength,
     },
     end: {
-      x: x + TURRET_SIZE / 2 + (TURRET_SIZE / 2) * Math.cos(turret.rotation),
-      y: y + TURRET_SIZE / 2 + (TURRET_SIZE / 2) * Math.sin(turret.rotation),
+      x: x + cannonLength * (1 + Math.cos(turret.rotation)),
+      y: y + cannonLength * (1 + Math.sin(turret.rotation)),
     },
     color: "white",
   });
@@ -87,36 +87,29 @@ function drawMap(state, time) {
   strokeRect({
     x: 0,
     y: 0,
-    width: state.board_dimension_x * state.cell_length,
-    height: state.board_dimension_y * state.cell_length,
+    width: state.board_dimension_x,
+    height: state.board_dimension_y,
     color: "white",
   });
 
-  const points = state.creep_path.map(({ x, y }) => {
-    return {
-      x: (x + 0.5) * state.cell_length,
-      y: y * state.cell_length + state.cell_length / 2,
-    };
-  });
-
   drawPath({
-    points,
+    points: state.creep_path,
     color: "white",
     segments: [3, 5],
     dashOffset: -time / 60,
   });
 
   fillRect({
-    x: state.creep_spawn.x * state.cell_length,
-    y: state.creep_spawn.y * state.cell_length,
+    x: state.creep_spawn.x,
+    y: state.creep_spawn.y,
     width: state.cell_length,
     height: state.cell_length,
     color: "green",
   });
 
   fillRect({
-    x: state.creep_goal.x * state.cell_length,
-    y: state.creep_goal.y * state.cell_length,
+    x: state.creep_goal.x,
+    y: state.creep_goal.y,
     width: state.cell_length,
     height: state.cell_length,
     color: "red",
