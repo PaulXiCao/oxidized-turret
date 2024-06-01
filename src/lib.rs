@@ -83,6 +83,7 @@ impl Game {
     }
 
     pub fn build_tower(&mut self, x: f32, y: f32) {
+        // TODO: position check (existing turrets, out of bounds)
         let grid_pos = to_grid_position(FloatPosition { x, y }, self.state.cell_length);
         self.state.turrets.add(Turret {
             pos: grid_pos,
