@@ -21,6 +21,7 @@ pub struct Turret {
     pub pos: GridPosition,
     pub rotation: f32, // orientation/angle in RAD
     pub last_shot: u32,
+    pub range: f32,
 }
 
 #[wasm_bindgen]

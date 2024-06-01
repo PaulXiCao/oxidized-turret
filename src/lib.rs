@@ -45,11 +45,13 @@ impl Game {
             pos: GridPosition { x: 2, y: 3 },
             rotation: 0.0,
             last_shot: 0,
+            range: 100.0,
         };
         let turret1 = Turret {
             pos: GridPosition { x: 1, y: 9 },
             rotation: 0.0,
             last_shot: 0,
+            range: 100.0,
         };
 
         turrets.add(turret0);
@@ -121,6 +123,7 @@ impl Game {
             pos: grid_pos,
             rotation: 0.0,
             last_shot: self.state.tick,
+            range: 100.0,
         });
 
         match compute_creep_path(&self.state) {
@@ -191,11 +194,28 @@ impl Game {
         }
 
         for turret in self.state.turrets.iter_mut() {
-            let target_creep_item_option = self.state.creeps.enumerate().next();
-            if Option::is_none(&target_creep_item_option) {
+            let x = (turret.pos.x as f32 + 0.5) * self.state.cell_length
+                + self.state.cell_length / 2.0 * turret.rotation.cos();
+            let y = (turret.pos.y as f32 + 0.5) * self.state.cell_length
+                + self.state.cell_length / 2.0 * turret.rotation.sin();
+            let turret_pos = FloatPosition { x, y };
+            let mut distances = vec![];
+            for creep_item in self.state.creeps.enumerate() {
+                let d = distance(creep_item.data.pos, turret_pos);
+                distances.push((d, creep_item));
+            }
+            let target_creep_item_option = distances
+                .iter()
+                .min_by_key(|(d, _item_ref)| (*d * 100.0) as i32);
+            if target_creep_item_option.is_none() {
+                break;
+            }
+
+            if target_creep_item_option.unwrap().0 > turret.range {
                 continue;
             }
-            let target_creep_item = target_creep_item_option.unwrap();
+
+            let target_creep_item = target_creep_item_option.unwrap().1;
             let target_creep = target_creep_item.data;
 
             let dx = target_creep.pos.x - turret.pos.x as f32 * self.state.cell_length;
@@ -203,13 +223,8 @@ impl Game {
             turret.rotation = dy.atan2(dx);
             if self.state.tick > turret.last_shot + 60 {
                 turret.last_shot = self.state.tick;
-                let x = (turret.pos.x as f32 + 0.5) * self.state.cell_length
-                    + self.state.cell_length / 2.0 * turret.rotation.cos();
-                let y = (turret.pos.y as f32 + 0.5) * self.state.cell_length
-                    + self.state.cell_length / 2.0 * turret.rotation.sin();
-
                 self.state.particles.add(Particle {
-                    pos: FloatPosition { x, y },
+                    pos: turret_pos,
                     target: target_creep_item.item_ref.clone(),
                 });
             }

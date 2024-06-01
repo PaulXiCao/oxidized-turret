@@ -47,7 +47,7 @@ wasm-pack build --out-dir web/src/wasm
 
 - [x] remove creeps when they die
 - [x] path finding for creeps (towers block creeps)
-- [ ] tower targeting logic (with range)
+- [x] tower targeting logic (with range)
 - [ ] you loose health if creep reaches target
 - [ ] you win if all creeps of a level are dead
 - [ ] game phases (build, animation)
