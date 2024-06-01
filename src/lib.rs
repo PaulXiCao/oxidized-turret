@@ -153,10 +153,11 @@ impl Game {
             self.state.last_spawn = self.state.tick;
             self.state.creeps.add(Creep {
                 pos: to_creep_position(self.state.creep_spawn, self.state.cell_length),
-                health: 4,
+                health: 10,
                 max_health: 10,
                 next_goal: 1,
                 ticks_walked: 0,
+                speed: 10,
             });
         }
 
@@ -164,13 +165,13 @@ impl Game {
         for creep_item in self.state.creeps.enumerate_mut() {
             let creep = &mut creep_item.data;
             creep.ticks_walked += 1;
-            if creep.ticks_walked >= 30 {
+            if creep.ticks_walked >= creep.speed {
                 creep.next_goal += 1;
                 creep.ticks_walked = 0;
             }
 
             {
-                let t = creep.ticks_walked as f32 / 30.0;
+                let t = creep.ticks_walked as f32 / creep.speed as f32;
                 let a = self.state.creep_path[creep.next_goal - 1];
                 let b = self.state.creep_path[creep.next_goal];
                 let pos = a * (1.0 - t) + b * t;
