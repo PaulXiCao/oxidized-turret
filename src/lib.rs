@@ -7,7 +7,6 @@ mod utils;
 use entities::*;
 use external::{ExternalState, ExternalTurret, TurretRef};
 use path::find_path;
-use pathfinding::grid;
 use recycled_list::{RecycledList, RecycledListRef};
 use utils::{
     distance, to_creep_position, to_float_position, to_grid_position, FloatPosition, GridPosition,
@@ -17,6 +16,22 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub struct Game {
     state: State,
+}
+
+fn compute_creep_path(state: &State) -> Option<Vec<FloatPosition>> {
+    let creep_path = find_path(state);
+    if creep_path.is_some() {
+        Some(
+            creep_path
+                .unwrap()
+                .0
+                .into_iter()
+                .map(|x| to_creep_position(x, state.cell_length))
+                .collect(),
+        )
+    } else {
+        Option::None
+    }
 }
 
 #[wasm_bindgen]
@@ -32,7 +47,7 @@ impl Game {
             last_shot: 0,
         };
         let turret1 = Turret {
-            pos: GridPosition { x: 10, y: 3 },
+            pos: GridPosition { x: 1, y: 9 },
             rotation: 0.0,
             last_shot: 0,
         };
@@ -40,38 +55,33 @@ impl Game {
         turrets.add(turret0);
         turrets.add(turret1);
 
-        Game {
-            state: State {
+        let mut state = State {
                 board_dimension_x: 20,
                 board_dimension_y: 15,
                 creep_spawn: GridPosition { x: 0, y: 9 },
                 creep_goal: GridPosition { x: 19, y: 9 },
+            creep_path: vec![],
                 last_spawn: 0,
                 turrets,
                 creeps: RecycledList::new(),
                 particles: RecycledList::new(),
                 cell_length: 30.0,
                 tick: 0,
-            },
-        }
+        };
+        state.creep_path = compute_creep_path(&state).unwrap();
+
+        Game { state }
     }
 
     pub fn get_state(&self) -> ExternalState {
         let state = &self.state;
-
-        let creep_path: Vec<FloatPosition> = find_path(state)
-            .unwrap()
-            .0
-            .into_iter()
-            .map(|x| to_creep_position(x, state.cell_length))
-            .collect();
 
         ExternalState {
             board_dimension_x: state.board_dimension_x as f32 * state.cell_length,
             board_dimension_y: state.board_dimension_y as f32 * state.cell_length,
             creep_spawn: to_float_position(state.creep_spawn, state.cell_length),
             creep_goal: to_float_position(state.creep_goal, state.cell_length),
-            creep_path,
+            creep_path: state.creep_path.clone(),
             turrets: state
                 .turrets
                 .iter()
@@ -112,8 +122,10 @@ impl Game {
             rotation: 0.0,
             last_shot: self.state.tick,
         });
-        if find_path(&self.state).is_none() {
-            self.state.turrets.remove(tower_ref);
+
+        match compute_creep_path(&self.state) {
+            Some(p) => self.state.creep_path = p,
+            _ => self.state.turrets.remove(tower_ref),
         }
     }
 
@@ -230,6 +242,7 @@ pub struct State {
     pub creep_spawn: GridPosition,
     pub creep_goal: GridPosition,
     last_spawn: u32,
+    pub creep_path: Vec<FloatPosition>,
     pub turrets: RecycledList<Turret>,
     pub creeps: RecycledList<Creep>,
     pub particles: RecycledList<Particle>,
