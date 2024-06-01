@@ -114,8 +114,10 @@ impl Game {
             turret.rotation = dy.atan2(dx);
             if self.state.tick > turret.last_shot + 60 {
                 turret.last_shot = self.state.tick;
-                let x = turret.pos.x as f32 * self.state.cell_length + 15.0 * turret.rotation.cos();
-                let y = turret.pos.y as f32 * self.state.cell_length + 15.0 * turret.rotation.sin();
+                let x = (turret.pos.x as f32 + 0.5) * self.state.cell_length
+                    + self.state.cell_length / 2.0 * turret.rotation.cos();
+                let y = (turret.pos.y as f32 + 0.5) * self.state.cell_length
+                    + self.state.cell_length / 2.0 * turret.rotation.sin();
 
                 self.state.particles.add(Particle {
                     pos: FloatPosition { x, y },
