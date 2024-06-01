@@ -56,17 +56,17 @@ impl Game {
         turrets.add(turret1);
 
         let mut state = State {
-                board_dimension_x: 20,
-                board_dimension_y: 15,
-                creep_spawn: GridPosition { x: 0, y: 9 },
-                creep_goal: GridPosition { x: 19, y: 9 },
+            board_dimension_x: 20,
+            board_dimension_y: 15,
+            creep_spawn: GridPosition { x: 0, y: 9 },
+            creep_goal: GridPosition { x: 19, y: 9 },
             creep_path: vec![],
-                last_spawn: 0,
-                turrets,
-                creeps: RecycledList::new(),
-                particles: RecycledList::new(),
-                cell_length: 30.0,
-                tick: 0,
+            last_spawn: 0,
+            turrets,
+            creeps: RecycledList::new(),
+            particles: RecycledList::new(),
+            cell_length: 30.0,
+            tick: 0,
         };
         state.creep_path = compute_creep_path(&state).unwrap();
 
@@ -155,13 +155,28 @@ impl Game {
                 pos: to_creep_position(self.state.creep_spawn, self.state.cell_length),
                 health: 4,
                 max_health: 10,
+                next_goal: 1,
+                ticks_walked: 0,
             });
         }
 
         let mut creeps_to_remove: Vec<RecycledListRef> = vec![];
         for creep_item in self.state.creeps.enumerate_mut() {
             let creep = &mut creep_item.data;
-            creep.pos.x += 1.0;
+            creep.ticks_walked += 1;
+            if creep.ticks_walked >= 30 {
+                creep.next_goal += 1;
+                creep.ticks_walked = 0;
+            }
+
+            {
+                let t = creep.ticks_walked as f32 / 30.0;
+                let a = self.state.creep_path[creep.next_goal - 1];
+                let b = self.state.creep_path[creep.next_goal];
+                let pos = a * (1.0 - t) + b * t;
+                creep.pos = pos;
+            }
+
             let d = distance(
                 to_creep_position(self.state.creep_goal, self.state.cell_length),
                 creep.pos,

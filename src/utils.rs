@@ -1,5 +1,7 @@
 use wasm_bindgen::prelude::*;
 
+use std::ops;
+
 #[wasm_bindgen]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct GridPosition {
@@ -12,6 +14,28 @@ pub struct GridPosition {
 pub struct FloatPosition {
     pub x: f32,
     pub y: f32,
+}
+
+impl ops::Add<FloatPosition> for FloatPosition {
+    type Output = FloatPosition;
+
+    fn add(self, rhs: FloatPosition) -> FloatPosition {
+        FloatPosition {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl ops::Mul<f32> for FloatPosition {
+    type Output = FloatPosition;
+
+    fn mul(self, rhs: f32) -> FloatPosition {
+        FloatPosition {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
 }
 
 pub fn distance(a: FloatPosition, b: FloatPosition) -> f32 {

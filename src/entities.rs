@@ -11,6 +11,8 @@ pub struct Creep {
     pub pos: FloatPosition,
     pub health: u32,
     pub max_health: u32,
+    pub next_goal: usize,
+    pub ticks_walked: u32,
 }
 
 #[derive(Clone)]
