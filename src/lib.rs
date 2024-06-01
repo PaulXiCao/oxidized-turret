@@ -1,7 +1,9 @@
+mod external;
 mod path;
 mod recycled_list;
 mod utils;
 
+use external::{ExternalTurret, TurretRef};
 use recycled_list::{RecycledList, RecycledListRef};
 use utils::{
     distance, to_creep_position, to_float_position, to_grid_position, FloatPosition, GridPosition,
@@ -90,6 +92,25 @@ impl Game {
             rotation: 0.0,
             last_shot: self.state.tick,
         });
+    }
+
+    pub fn get_tower_at(self, x: f32, y: f32) -> Option<TurretRef> {
+        let grid_pos = to_grid_position(FloatPosition { x, y }, self.state.cell_length);
+        let value = self
+            .state
+            .turrets
+            .enumerate()
+            .find(|x| x.data.pos == grid_pos);
+        match value {
+            None => None,
+            Some(x) => Some(TurretRef {
+                turret: ExternalTurret {
+                    pos: to_float_position(x.data.pos, self.state.cell_length),
+                    rotation: x.data.rotation,
+                },
+                turret_ref: x.item_ref.clone(),
+            }),
+        }
     }
 
     pub fn update_state(&mut self) {
@@ -220,13 +241,6 @@ pub struct Turret {
     pub pos: GridPosition,
     pub rotation: f32, // orientation/angle in RAD
     last_shot: u32,
-}
-
-#[wasm_bindgen]
-#[derive(Clone)]
-pub struct ExternalTurret {
-    pub pos: FloatPosition,
-    pub rotation: f32, // orientation/angle in RAD
 }
 
 #[wasm_bindgen]

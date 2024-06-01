@@ -82,12 +82,12 @@ export const game = {
     startMove.y = event.clientY;
     startOffset = canvas.getOffset();
 
-    window.addEventListener("mousemove", mousemove);
+    window.addEventListener("pointermove", mousemove);
   },
   /**
    * @param {MouseEvent} event
    */
   handleMouseup(event) {
-    window.removeEventListener("mousemove", mousemove);
+    window.removeEventListener("pointermove", mousemove);
   },
 };

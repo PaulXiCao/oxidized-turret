@@ -8,6 +8,7 @@ const uiArt = new Art(uiCanvas);
 
 const uiState = new Proxy(
   {
+    state: "initial",
     selectedTurret: null,
   },
   {
@@ -24,8 +25,6 @@ window.addEventListener("keyup", function shortcutHandler(event) {
     uiState.selectedTurret = uiState.selectedTurret === null ? 0 : null;
   }
 });
-
-let mousedownObject = null;
 
 export const ui = {
   drawUi() {
@@ -67,56 +66,37 @@ export const ui = {
    * @param {MouseEvent} event
    */
   handleMousedown(event) {
-    // sidebar
-    if (event.clientX <= 50) {
-      if (event.clientY >= 0 && event.clientY <= 50) {
-        mousedownObject = 0;
-      }
-      return true;
-    }
-    if (event.clientX > 50 && uiState.selectedTurret !== null) {
-      mousedownObject = {
-        turret: 0,
-        pos: { x: event.clientX, y: event.clientY },
-      };
-    }
     return false;
   },
   /**
    * @param {MouseEvent} event
    */
   handleMouseup(event) {
-    if (event.clientX <= 50 && mousedownObject !== null) {
+    return false;
+  },
+  /**
+   * @param {MouseEvent} event
+   */
+  handleClick(event) {
+    if (event.clientX <= 50) {
       if (uiState.selectedTurret === null) {
-        uiState.selectedTurret = mousedownObject;
+        uiState.selectedTurret = 0;
       } else {
         uiState.selectedTurret = null;
       }
-
-      mousedownObject = null;
-      return true;
     }
 
-    if (
-      event.clientX > 50 &&
-      uiState.selectedTurret !== null &&
-      mousedownObject.pos
-    ) {
-      if (
-        mousedownObject.pos.x === event.clientX &&
-        mousedownObject.pos.y === event.clientY
-      ) {
-        window.dispatchEvent(
-          new CustomEvent("buildTower", {
-            detail: {
-              type: uiState.selectedTurret,
-              screenPos: { x: event.clientX, y: event.clientY },
-            },
-          })
-        );
-      }
-      mousedownObject = null;
+    if (event.clientX > 50 && uiState.selectedTurret !== null) {
+      window.dispatchEvent(
+        new CustomEvent("buildTower", {
+          detail: {
+            type: uiState.selectedTurret,
+            screenPos: { x: event.clientX, y: event.clientY },
+          },
+        })
+      );
     }
+
     return false;
   },
   getState() {

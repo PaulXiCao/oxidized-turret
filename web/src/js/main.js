@@ -36,14 +36,24 @@ window.addEventListener(
 
 const gameEngine = wasm.Game.new();
 
-window.addEventListener("mousedown", function mainMousedownHandler(event) {
+let lastPointerDown = null;
+window.addEventListener("pointerdown", function mainMousedownHandler(event) {
+  lastPointerDown = { x: event.clientX, y: event.clientY };
   const captured = ui.handleMousedown(event);
   if (!captured) {
     game.handleMousedown(event);
   }
 });
 
-window.addEventListener("mouseup", function mainMouseupHandler(event) {
+window.addEventListener("pointerup", function mainMouseupHandler(event) {
+  if (
+    lastPointerDown &&
+    lastPointerDown.x === event.clientX &&
+    lastPointerDown.y === event.clientY
+  ) {
+    ui.handleClick(event);
+  }
+
   const captured = ui.handleMouseup(event);
   if (!captured) {
     game.handleMouseup(event);
@@ -52,7 +62,7 @@ window.addEventListener("mouseup", function mainMouseupHandler(event) {
 
 let mouseX = 0;
 let mouseY = 0;
-window.addEventListener("mousemove", function currentMousePosition(event) {
+window.addEventListener("pointermove", function currentMousePosition(event) {
   mouseX = event.clientX;
   mouseY = event.clientY;
 });
