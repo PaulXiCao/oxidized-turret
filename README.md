@@ -54,7 +54,8 @@ wasm-pack build --out-dir web/src/wasm
 - [x] Zoom and Drag
 - [x] Engine Coordinates to Pixel coordinates
 - [x] fullscreen + resize
+- [x] Simple Tower Building UI
+- [x] display path of creeps
 - [ ] display score and health
-- [ ] display path of creeps
 - [ ] display tower range on click
 - [ ] higher frame rates than 60 FPS
