@@ -95,7 +95,7 @@ export class Art {
       y: state.creep_spawn.y,
       width: state.cell_length,
       height: state.cell_length,
-      color: "green",
+      color: "rgba(0, 255, 0, 0.3)",
     });
 
     this.canvas.fillRect({
@@ -103,7 +103,7 @@ export class Art {
       y: state.creep_goal.y,
       width: state.cell_length,
       height: state.cell_length,
-      color: "red",
+      color: "rgba(255, 0, 0, 0.3)",
     });
   }
 
