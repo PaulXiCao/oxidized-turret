@@ -33,6 +33,13 @@ export class Canvas {
     return this.scale;
   }
 
+  realToCanvas({ x, y }) {
+    return {
+      x: (x - this.offsetX) * this.scale,
+      y: (y - this.offsetY) * this.scale,
+    };
+  }
+
   /**
    * @param {number} scale
    */

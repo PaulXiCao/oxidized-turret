@@ -1,5 +1,5 @@
-import { drawState } from "./game.js";
-import { drawUi } from "./ui.js";
+import { game } from "./game.js";
+import { ui } from "./ui.js";
 import * as wasm from "../wasm/oxidized_turret_bg.js";
 
 // expose JavaScript functions to WASM imports
@@ -34,14 +34,42 @@ window.addEventListener(
   { passive: false }
 );
 
-const game = wasm.Game.new();
+const gameEngine = wasm.Game.new();
 
-// draw UI only once (it is redrawn on resize)
-drawUi();
+window.addEventListener("mousedown", function mainMousedownHandler(event) {
+  const captured = ui.handleMousedown(event);
+  if (!captured) {
+    game.handleMousedown(event);
+  }
+});
+
+window.addEventListener("mouseup", function mainMouseupHandler(event) {
+  const captured = ui.handleMouseup(event);
+  if (!captured) {
+    game.handleMouseup(event);
+  }
+});
+
+let mouseX = 0;
+let mouseY = 0;
+window.addEventListener("mousemove", function currentMousePosition(event) {
+  mouseX = event.clientX;
+  mouseY = event.clientY;
+});
+
+// draw UI only once (it is internally redrawn when needed)
+ui.drawUi();
 
 function loop(time) {
-  game.update_state();
-  drawState(game.get_state(), time);
+  gameEngine.update_state();
+  const gameState = gameEngine.get_state();
+  game.drawState(gameState, time);
+
+  const uiState = ui.getState();
+  if (uiState.selectedTurret === 0 && mouseX > 50) {
+    game.indicateTurret(gameState, { x: mouseX, y: mouseY });
+  }
+
   requestAnimationFrame(loop);
 }
 

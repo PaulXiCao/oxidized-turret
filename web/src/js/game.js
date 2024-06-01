@@ -30,34 +30,61 @@ function mousemove(event) {
   });
 }
 
-window.addEventListener("mousedown", (event) => {
-  startMove.x = event.clientX;
-  startMove.y = event.clientY;
-  startOffset = canvas.getOffset();
-
-  window.addEventListener("mousemove", mousemove);
-});
-
-window.addEventListener("mouseup", (event) => {
-  window.removeEventListener("mousemove", mousemove);
-});
-
 const gameArt = new Art(canvas);
 
-/**
- * @param {ExternalState} state
- */
-export function drawState(state, time) {
-  gameArt.clear();
-  gameArt.drawMap(state, time);
+export const game = {
+  /**
+   * @param {ExternalState} state
+   */
+  drawState(state, time) {
+    gameArt.clear();
+    gameArt.drawMap(state, time);
 
-  for (const turret of state.turrets) {
-    gameArt.drawTurret(turret, state.cell_length);
-  }
-  for (const creep of state.creeps) {
-    gameArt.drawCreep(creep);
-  }
-  for (const particle of state.particles) {
-    gameArt.drawParticle(particle);
-  }
-}
+    for (const turret of state.turrets) {
+      gameArt.drawTurret(turret, state.cell_length);
+    }
+    for (const creep of state.creeps) {
+      gameArt.drawCreep(creep);
+    }
+    for (const particle of state.particles) {
+      gameArt.drawParticle(particle);
+    }
+  },
+  /**
+   * @param {ExternalState} state
+   */
+  indicateTurret(state, realPos) {
+    const { x, y } = canvas.realToCanvas(realPos);
+
+    let gridX = Math.floor(x / state.cell_length) * state.cell_length;
+    let gridY = Math.floor(y / state.cell_length) * state.cell_length;
+
+    canvas.fillRect({
+      x: gridX,
+      y: gridY,
+      width: state.cell_length,
+      height: state.cell_length,
+      color: "rgba(255, 255, 255, 0.1)",
+    });
+    gameArt.drawTurret(
+      { pos: { x: gridX, y: gridY }, rotation: 0 },
+      state.cell_length
+    );
+  },
+  /**
+   * @param {MouseEvent} event
+   */
+  handleMousedown(event) {
+    startMove.x = event.clientX;
+    startMove.y = event.clientY;
+    startOffset = canvas.getOffset();
+
+    window.addEventListener("mousemove", mousemove);
+  },
+  /**
+   * @param {MouseEvent} event
+   */
+  handleMouseup(event) {
+    window.removeEventListener("mousemove", mousemove);
+  },
+};
