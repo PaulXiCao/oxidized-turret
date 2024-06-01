@@ -57,6 +57,12 @@ window.addEventListener("mousemove", function currentMousePosition(event) {
   mouseY = event.clientY;
 });
 
+// custom events
+window.addEventListener("buildTower", function buildTowerEventListener(event) {
+  const canvasPos = game.realToCanvas(event.detail.screenPos);
+  gameEngine.build_tower(canvasPos.x, canvasPos.y);
+});
+
 // draw UI only once (it is internally redrawn when needed)
 ui.drawUi();
 

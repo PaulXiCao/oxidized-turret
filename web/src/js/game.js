@@ -33,6 +33,9 @@ function mousemove(event) {
 const gameArt = new Art(canvas);
 
 export const game = {
+  realToCanvas(screenPos) {
+    return canvas.realToCanvas(screenPos);
+  },
   /**
    * @param {ExternalState} state
    */

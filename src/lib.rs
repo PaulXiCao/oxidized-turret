@@ -3,7 +3,9 @@ mod recycled_list;
 mod utils;
 
 use recycled_list::{RecycledList, RecycledListRef};
-use utils::{distance, to_creep_position, to_float_position, FloatPosition, GridPosition};
+use utils::{
+    distance, to_creep_position, to_float_position, to_grid_position, FloatPosition, GridPosition,
+};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -73,6 +75,15 @@ impl Game {
             creeps: state.creeps.iter().map(|x| *x).collect(),
             cell_length: state.cell_length,
         }
+    }
+
+    pub fn build_tower(&mut self, x: f32, y: f32) {
+        let grid_pos = to_grid_position(FloatPosition { x, y }, self.state.cell_length);
+        self.state.turrets.push(Turret {
+            pos: grid_pos,
+            rotation: 0.0,
+            last_shot: self.state.tick,
+        });
     }
 
     pub fn update_state(&mut self) {
@@ -247,14 +258,10 @@ impl Game {
                     None => return false,
                     Some(pos) => pos,
                 };
-                self.build_tower(pos)
+                // self.build_tower(pos)
+                true
             }
         }
-    }
-
-    // @return tower building successfull?
-    fn build_tower(&mut self, _pos: GridPosition) -> bool {
-        todo!()
     }
 
     fn forfeit(&mut self) {

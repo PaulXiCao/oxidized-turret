@@ -74,6 +74,12 @@ export const ui = {
       }
       return true;
     }
+    if (event.clientX > 50 && uiState.selectedTurret !== null) {
+      mousedownObject = {
+        turret: 0,
+        pos: { x: event.clientX, y: event.clientY },
+      };
+    }
     return false;
   },
   /**
@@ -89,6 +95,27 @@ export const ui = {
 
       mousedownObject = null;
       return true;
+    }
+
+    if (
+      event.clientX > 50 &&
+      uiState.selectedTurret !== null &&
+      mousedownObject.pos
+    ) {
+      if (
+        mousedownObject.pos.x === event.clientX &&
+        mousedownObject.pos.y === event.clientY
+      ) {
+        window.dispatchEvent(
+          new CustomEvent("buildTower", {
+            detail: {
+              type: uiState.selectedTurret,
+              screenPos: { x: event.clientX, y: event.clientY },
+            },
+          })
+        );
+      }
+      mousedownObject = null;
     }
     return false;
   },
