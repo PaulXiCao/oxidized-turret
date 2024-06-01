@@ -7,6 +7,7 @@ mod utils;
 use entities::*;
 use external::{ExternalState, ExternalTurret, TurretRef};
 use path::find_path;
+use pathfinding::grid;
 use recycled_list::{RecycledList, RecycledListRef};
 use utils::{
     distance, to_creep_position, to_float_position, to_grid_position, FloatPosition, GridPosition,
@@ -86,13 +87,34 @@ impl Game {
     }
 
     pub fn build_tower(&mut self, x: f32, y: f32) {
-        // TODO: position check (existing turrets, out of bounds)
+        if x < 0.0 || y < 0.0 {
+            return;
+        }
+
         let grid_pos = to_grid_position(FloatPosition { x, y }, self.state.cell_length);
-        self.state.turrets.add(Turret {
+        if grid_pos.x >= self.state.board_dimension_x || grid_pos.y >= self.state.board_dimension_y
+        {
+            return;
+        }
+
+        if self
+            .state
+            .turrets
+            .iter()
+            .find(|x| x.pos == grid_pos)
+            .is_some()
+        {
+            return;
+        }
+
+        let tower_ref = self.state.turrets.add(Turret {
             pos: grid_pos,
             rotation: 0.0,
             last_shot: self.state.tick,
         });
+        if find_path(&self.state).is_none() {
+            self.state.turrets.remove(tower_ref);
+        }
     }
 
     pub fn get_tower_at(self, x: f32, y: f32) -> Option<TurretRef> {

@@ -11,16 +11,26 @@ pub fn find_path(state: &State) -> Option<(Vec<GridPosition>, u32)> {
             let x = p.x;
             let y = p.y;
 
-            let mut successors: Vec<GridPosition> = vec![
-                GridPosition { x: x + 0, y: y + 1 },
-                GridPosition { x: x + 1, y: y + 0 },
-            ];
+            let mut successors: Vec<GridPosition> = vec![];
 
             if x > 0 {
                 successors.push(GridPosition { x: x - 1, y: y + 0 });
             }
             if y > 0 {
                 successors.push(GridPosition { x: x + 0, y: y - 1 });
+            }
+            if x + 1 < state.board_dimension_x {
+                successors.push(GridPosition { x: x + 1, y: y + 0 });
+            }
+            if y + 1 < state.board_dimension_y {
+                successors.push(GridPosition { x: x + 0, y: y + 1 });
+            }
+
+            for turret in state.turrets.iter() {
+                let index = successors.iter().position(|x| *x == turret.pos);
+                if index.is_some() {
+                    successors.remove(index.unwrap());
+                }
             }
 
             successors.into_iter().map(|p| (p, 1)).collect()
