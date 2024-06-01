@@ -21,6 +21,8 @@ pub struct Game {
 #[wasm_bindgen]
 impl Game {
     pub fn new() -> Self {
+        utils::set_panic_hook();
+
         let mut turrets: RecycledList<Turret> = RecycledList::new();
 
         let turret0 = Turret {
