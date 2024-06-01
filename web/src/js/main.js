@@ -15,6 +15,25 @@ await WebAssembly.instantiateStreaming(
   window.wasm = wasm;
 });
 
+// disable browser zoom with keyboard and mouse
+window.addEventListener("keydown", function disableKeyboardZoom(event) {
+  if (event.ctrlKey === true && ["+", "-", "0"].includes(event.key)) {
+    console.log(event.key);
+    event.preventDefault();
+  }
+});
+
+window.addEventListener(
+  "wheel",
+  function disableMouseZoom(event) {
+    if (event.ctrlKey === true) {
+      event.preventDefault();
+      return false;
+    }
+  },
+  { passive: false }
+);
+
 const game = wasm.Game.new();
 
 // draw UI only once (it is redrawn on resize)
