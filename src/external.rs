@@ -1,3 +1,4 @@
+use crate::entities::{Creep, Particle};
 use crate::recycled_list::RecycledListRef;
 use crate::utils::FloatPosition;
 use wasm_bindgen::prelude::*;
@@ -14,4 +15,19 @@ pub struct ExternalTurret {
 pub struct TurretRef {
     pub turret: ExternalTurret,
     pub turret_ref: RecycledListRef,
+}
+
+#[wasm_bindgen(getter_with_clone)]
+#[derive(Clone)]
+pub struct ExternalState {
+    // upper-left corner (0,0), lower-right corner (nx-1, nx-1)
+    pub board_dimension_x: f32, // no. of grid points in x-direction
+    pub board_dimension_y: f32, // no. of grid points in y-direction
+    pub creep_spawn: FloatPosition,
+    pub creep_goal: FloatPosition,
+    pub creep_path: Vec<FloatPosition>,
+    pub turrets: Vec<ExternalTurret>,
+    pub creeps: Vec<Creep>,
+    pub particles: Vec<Particle>,
+    pub cell_length: f32,
 }

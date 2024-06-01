@@ -1,9 +1,11 @@
+mod entities;
 mod external;
 mod path;
 mod recycled_list;
 mod utils;
 
-use external::{ExternalTurret, TurretRef};
+use entities::*;
+use external::{ExternalState, ExternalTurret, TurretRef};
 use recycled_list::{RecycledList, RecycledListRef};
 use utils::{
     distance, to_creep_position, to_float_position, to_grid_position, FloatPosition, GridPosition,
@@ -198,20 +200,6 @@ impl Game {
         self.state.tick += 1;
     }
 }
-#[wasm_bindgen(getter_with_clone)]
-#[derive(Clone)]
-pub struct ExternalState {
-    // upper-left corner (0,0), lower-right corner (nx-1, nx-1)
-    pub board_dimension_x: f32, // no. of grid points in x-direction
-    pub board_dimension_y: f32, // no. of grid points in y-direction
-    pub creep_spawn: FloatPosition,
-    pub creep_goal: FloatPosition,
-    pub creep_path: Vec<FloatPosition>,
-    pub turrets: Vec<ExternalTurret>,
-    pub creeps: Vec<Creep>,
-    pub particles: Vec<Particle>,
-    pub cell_length: f32,
-}
 
 #[derive(Clone)]
 pub struct State {
@@ -226,30 +214,6 @@ pub struct State {
     pub particles: RecycledList<Particle>,
     pub cell_length: f32,
     tick: u32,
-}
-
-#[wasm_bindgen]
-#[derive(Clone, Copy)]
-pub struct Creep {
-    pub pos: FloatPosition,
-    pub health: u32,
-    pub max_health: u32,
-}
-
-#[derive(Clone)]
-pub struct Turret {
-    pub pos: GridPosition,
-    pub rotation: f32, // orientation/angle in RAD
-    last_shot: u32,
-}
-
-#[wasm_bindgen]
-#[derive(Clone, Copy)]
-pub struct Particle {
-    pub pos: FloatPosition,
-    // todo: remove "pub". should not leave api. this reference should not be needed for drawing. passing references
-    // through api seems odd / hard to do in rust?
-    target: RecycledListRef,
 }
 
 //
