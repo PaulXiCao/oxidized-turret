@@ -4,6 +4,7 @@ import {
   fillTriangle,
   strokeRect,
   drawLine,
+  drawPath,
   clear,
 } from "./canvas.js";
 import * as wasm from "../wasm/oxidized_turret_bg.js";
@@ -22,9 +23,6 @@ await WebAssembly.instantiateStreaming(
 });
 
 const game = wasm.Game.new();
-const state = game.get_state();
-const gameWidth = state.board_dimension_x;
-const gameHeight = state.board_dimension_y;
 
 const TURRET_SIZE = 30;
 const PARTICLE_SIZE = 5;
@@ -85,7 +83,7 @@ function drawCreep(creep) {
 /**
  * @param {wasm.ExternalState} state
  */
-function drawMap(state) {
+function drawMap(state, time) {
   strokeRect({
     x: 0,
     y: 0,
@@ -93,14 +91,44 @@ function drawMap(state) {
     height: state.board_dimension_y * state.cell_length,
     color: "white",
   });
+
+  const points = state.creep_path.map(({ x, y }) => {
+    return {
+      x: (x + 0.5) * state.cell_length,
+      y: y * state.cell_length + state.cell_length / 2,
+    };
+  });
+
+  drawPath({
+    points,
+    color: "white",
+    segments: [3, 5],
+    dashOffset: -time / 60,
+  });
+
+  fillRect({
+    x: state.creep_spawn.x * state.cell_length,
+    y: state.creep_spawn.y * state.cell_length,
+    width: state.cell_length,
+    height: state.cell_length,
+    color: "green",
+  });
+
+  fillRect({
+    x: state.creep_goal.x * state.cell_length,
+    y: state.creep_goal.y * state.cell_length,
+    width: state.cell_length,
+    height: state.cell_length,
+    color: "red",
+  });
 }
 
 /**
  * @param {wasm.ExternalState} state
  */
-function drawState(state) {
+function drawState(state, time) {
   clear();
-  drawMap(state);
+  drawMap(state, time);
 
   for (const turret of state.turrets) {
     drawTurret(turret, state.cell_length);
@@ -115,7 +143,7 @@ function drawState(state) {
 
 function loop(time) {
   game.update_state();
-  drawState(game.get_state());
+  drawState(game.get_state(), time);
   requestAnimationFrame(loop);
 }
 

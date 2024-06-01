@@ -43,9 +43,21 @@ impl Game {
 
     pub fn get_state(&self) -> ExternalState {
         let state = &self.state;
+
+        let mut creep_path: Vec<GridPosition> = vec![];
+        for x in state.creep_spawn.x..state.creep_goal.x + 1 {
+            creep_path.push(GridPosition {
+                x,
+                y: state.creep_spawn.y,
+            });
+        }
+
         ExternalState {
             board_dimension_x: state.board_dimension_x,
             board_dimension_y: state.board_dimension_y,
+            creep_spawn: state.creep_spawn,
+            creep_goal: state.creep_goal,
+            creep_path,
             turrets: state.turrets.clone(),
             particles: state.particles.iter().map(|x| *x).collect(),
             creeps: state.creeps.iter().map(|x| *x).collect(),
@@ -142,6 +154,9 @@ pub struct ExternalState {
     // upper-left corner (0,0), lower-right corner (nx-1, nx-1)
     pub board_dimension_x: u32, // no. of grid points in x-direction
     pub board_dimension_y: u32, // no. of grid points in y-direction
+    pub creep_spawn: GridPosition,
+    pub creep_goal: GridPosition,
+    pub creep_path: Vec<GridPosition>,
     pub turrets: Vec<Turret>,
     pub creeps: Vec<Creep>,
     pub particles: Vec<Particle>,

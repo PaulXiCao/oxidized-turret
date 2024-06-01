@@ -68,6 +68,22 @@ export function drawLine({ start, end, color }) {
   ctx.stroke();
 }
 
+export function drawPath({ points, color, segments = [], dashOffset = 0 }) {
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  ctx.setLineDash(segments);
+  ctx.lineDashOffset = dashOffset;
+
+  const start = points[0];
+  ctx.moveTo(start.x / scale + offsetX, start.y / scale + offsetY);
+  for (let i = 1; i < points.length; i += 1) {
+    ctx.lineTo(points[i].x / scale + offsetX, points[i].y / scale + offsetY);
+  }
+  ctx.stroke();
+  // reset line dash
+  ctx.setLineDash([]);
+}
+
 export function fillCircle({ x, y, r, color }) {
   ctx.fillStyle = color;
   ctx.beginPath();
