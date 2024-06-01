@@ -16,18 +16,26 @@
         overflow: hidden;
       }
 
-      canvas {
+      #canvas {
         position: absolute;
         background: black;
         top: 0;
         left: 0;
+        z-index: 0;
+      }
+      #ui {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
       }
     </style>
   </head>
   <body>
     <canvas id="canvas"></canvas>
+    <canvas id="ui"></canvas>
 
-    <script src="/js/game.js" type="module" defer></script>
+    <script src="/js/main.js" type="module" defer></script>
     <script>
       if (document.location.port === "8080") {
         function connectEventSource() {

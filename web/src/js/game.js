@@ -1,143 +1,63 @@
-import {
-  fillCircle,
-  fillRect,
-  fillTriangle,
-  strokeRect,
-  drawLine,
-  drawPath,
-  clear,
-} from "./canvas.js";
-import * as wasm from "../wasm/oxidized_turret_bg.js";
+import { ExternalState } from "../wasm/oxidized_turret_bg.js";
+import { Canvas } from "./Canvas.js";
+import { Art } from "./Art.js";
+import { clamp } from "./utils.js";
 
-// expose JavaScript functions to WASM imports
-const importObject = {
-  "./oxidized_turret_bg.js": wasm,
-};
-await WebAssembly.instantiateStreaming(
-  fetch("/wasm/oxidized_turret_bg.wasm"),
-  importObject
-).then((obj) => {
-  // expose WASM exports to JavaScript bindings
-  wasm.__wbg_set_wasm(obj.instance.exports);
-  window.wasm = wasm;
+const canvas = new Canvas(document.getElementById("canvas"), {
+  scale: 1.0,
+  offsetX: 60,
+  offsetY: 10,
+});
+canvas.resize({ width: window.innerWidth, height: window.innerHeight });
+
+window.addEventListener("resize", function () {
+  canvas.resize({ width: window.innerWidth, height: window.innerHeight });
 });
 
-const game = wasm.Game.new();
+window.addEventListener("wheel", (event) => {
+  canvas.setScale(
+    clamp(canvas.getScale() + 0.02 * Math.sign(event.deltaY), 0.25, 4)
+  );
+});
 
-const PARTICLE_SIZE = 5;
-const CREEP_SIZE = 20;
-const HEALTH_BAR_HEIGHT = 2;
+let startMove = { x: 0, y: 0 };
+let startOffset = { x: 0, y: 0 };
 
-function drawTurret(turret, turretSize) {
-  const x = turret.pos.x;
-  const y = turret.pos.y;
-  strokeRect({
-    x,
-    y,
-    width: turretSize,
-    height: turretSize,
-  });
-
-  const cannonLength = turretSize / 2;
-  drawLine({
-    start: {
-      x: x + cannonLength,
-      y: y + cannonLength,
-    },
-    end: {
-      x: x + cannonLength * (1 + Math.cos(turret.rotation)),
-      y: y + cannonLength * (1 + Math.sin(turret.rotation)),
-    },
-    color: "white",
+function mousemove(event) {
+  canvas.setOffset({
+    x: startOffset.x + event.clientX - startMove.x,
+    y: startOffset.y + event.clientY - startMove.y,
   });
 }
 
-function drawParticle(particle) {
-  fillCircle({
-    x: particle.pos.x,
-    y: particle.pos.y,
-    r: PARTICLE_SIZE,
-    color: "silver",
-  });
-}
+window.addEventListener("mousedown", (event) => {
+  startMove.x = event.clientX;
+  startMove.y = event.clientY;
+  startOffset = canvas.getOffset();
 
-function drawCreep(creep) {
-  fillTriangle({
-    x: creep.pos.x,
-    y: creep.pos.y,
-    size: CREEP_SIZE,
-    color: "yellow",
-  });
+  window.addEventListener("mousemove", mousemove);
+});
 
-  const healthPercentage = creep.health / creep.max_health;
+window.addEventListener("mouseup", (event) => {
+  window.removeEventListener("mousemove", mousemove);
+});
 
-  fillRect({
-    x: creep.pos.x - CREEP_SIZE / 2,
-    y: creep.pos.y - CREEP_SIZE / 2 - HEALTH_BAR_HEIGHT,
-    width: CREEP_SIZE * healthPercentage,
-    height: HEALTH_BAR_HEIGHT,
-    color: "green",
-  });
-}
+const gameArt = new Art(canvas);
 
 /**
- * @param {wasm.ExternalState} state
+ * @param {ExternalState} state
  */
-function drawMap(state, time) {
-  strokeRect({
-    x: 0,
-    y: 0,
-    width: state.board_dimension_x,
-    height: state.board_dimension_y,
-    color: "white",
-  });
-
-  drawPath({
-    points: state.creep_path,
-    color: "white",
-    segments: [3, 5],
-    dashOffset: -time / 60,
-  });
-
-  fillRect({
-    x: state.creep_spawn.x,
-    y: state.creep_spawn.y,
-    width: state.cell_length,
-    height: state.cell_length,
-    color: "green",
-  });
-
-  fillRect({
-    x: state.creep_goal.x,
-    y: state.creep_goal.y,
-    width: state.cell_length,
-    height: state.cell_length,
-    color: "red",
-  });
-}
-
-/**
- * @param {wasm.ExternalState} state
- */
-function drawState(state, time) {
-  clear();
-  drawMap(state, time);
+export function drawState(state, time) {
+  gameArt.clear();
+  gameArt.drawMap(state, time);
 
   for (const turret of state.turrets) {
-    drawTurret(turret, state.cell_length);
+    gameArt.drawTurret(turret, state.cell_length);
   }
   for (const creep of state.creeps) {
-    drawCreep(creep);
+    gameArt.drawCreep(creep);
   }
   for (const particle of state.particles) {
-    drawParticle(particle);
+    gameArt.drawParticle(particle);
   }
 }
-
-function loop(time) {
-  game.update_state();
-  drawState(game.get_state(), time);
-  requestAnimationFrame(loop);
-}
-
-requestAnimationFrame(loop);
