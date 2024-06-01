@@ -39,10 +39,7 @@ const gameEngine = wasm.Game.new();
 let lastPointerDown = null;
 window.addEventListener("pointerdown", function mainMousedownHandler(event) {
   lastPointerDown = { x: event.clientX, y: event.clientY };
-  const captured = ui.handleMousedown(event);
-  if (!captured) {
-    game.handleMousedown(event);
-  }
+  game.handleMousedown(event);
 });
 
 window.addEventListener("pointerup", function mainMouseupHandler(event) {
@@ -53,11 +50,7 @@ window.addEventListener("pointerup", function mainMouseupHandler(event) {
   ) {
     ui.handleClick(event);
   }
-
-  const captured = ui.handleMouseup(event);
-  if (!captured) {
-    game.handleMouseup(event);
-  }
+  game.handleMouseup(event);
 });
 
 let mouseX = 0;

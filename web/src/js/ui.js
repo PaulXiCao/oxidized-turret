@@ -61,19 +61,6 @@ export const ui = {
       color: "black",
     });
   },
-
-  /**
-   * @param {MouseEvent} event
-   */
-  handleMousedown(event) {
-    return false;
-  },
-  /**
-   * @param {MouseEvent} event
-   */
-  handleMouseup(event) {
-    return false;
-  },
   /**
    * @param {MouseEvent} event
    */
