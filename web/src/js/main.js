@@ -1,6 +1,12 @@
-import { game } from "./game.js";
-import { ui } from "./ui.js";
+/**
+ * Main glue code for the JS Frontend.
+ * All browser global interactions (document, window, event listeners)
+ * should happen here.
+ */
+import { createGameCanvas } from "./game.js";
+import { createUi } from "./ui.js";
 import * as wasm from "../wasm/oxidized_turret_bg.js";
+import { createStateHandler } from "./state.js";
 
 // expose JavaScript functions to WASM imports
 const importObject = {
@@ -35,22 +41,32 @@ window.addEventListener(
 );
 
 const gameEngine = wasm.Game.new();
+const ui = createUi(document.getElementById("ui"));
+const gameCanvas = createGameCanvas(document.getElementById("canvas"));
+const stateHandler = createStateHandler({ gameEngine, gameCanvas, ui });
 
 let lastPointerDown = null;
+let isDragging = false;
+
 window.addEventListener("pointerdown", function mainMousedownHandler(event) {
   lastPointerDown = { x: event.clientX, y: event.clientY };
-  game.handleMousedown(event);
+  isDragging = false;
 });
 
 window.addEventListener("pointerup", function mainMouseupHandler(event) {
+  const pos = { x: event.clientX, y: event.clientY };
   if (
     lastPointerDown &&
     lastPointerDown.x === event.clientX &&
     lastPointerDown.y === event.clientY
   ) {
-    ui.handleClick(event);
+    stateHandler.handleClick(pos);
+  } else if (lastPointerDown) {
+    stateHandler.handleDragEnd(pos);
+    isDragging = false;
   }
-  game.handleMouseup(event);
+
+  lastPointerDown = null;
 });
 
 let mouseX = 0;
@@ -58,27 +74,42 @@ let mouseY = 0;
 window.addEventListener("pointermove", function currentMousePosition(event) {
   mouseX = event.clientX;
   mouseY = event.clientY;
+
+  const pos = { x: event.clientX, y: event.clientY };
+  if (lastPointerDown) {
+    if (!isDragging) {
+      stateHandler.handleDragStart(pos);
+      isDragging = true;
+    }
+    stateHandler.handleDragMove({
+      initialPos: lastPointerDown,
+      currentPos: pos,
+    });
+  }
 });
 
-// custom events
-window.addEventListener("buildTower", function buildTowerEventListener(event) {
-  const canvasPos = game.realToCanvas(event.detail.screenPos);
-  gameEngine.build_tower(canvasPos.x, canvasPos.y);
+window.addEventListener("keyup", function shortcutHandler(event) {
+  stateHandler.handleKeyUp({ key: event.key });
 });
 
-// draw UI only once (it is internally redrawn when needed)
-ui.drawUi();
+window.addEventListener("resize", function () {
+  stateHandler.handleResize({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+});
+// trigger resize event once on load
+stateHandler.handleResize({
+  width: window.innerWidth,
+  height: window.innerHeight,
+});
+
+window.addEventListener("wheel", (event) => {
+  stateHandler.handleWheel({ dirY: Math.sign(event.deltaY) });
+});
 
 function loop(time) {
-  gameEngine.update_state();
-  const gameState = gameEngine.get_state();
-  game.drawState(gameState, time);
-
-  const uiState = ui.getState();
-  if (uiState.selectedTurret === 0 && mouseX > 50) {
-    game.indicateTurret(gameState, { x: mouseX, y: mouseY });
-  }
-
+  stateHandler.handleTimeStep(time);
   requestAnimationFrame(loop);
 }
 
