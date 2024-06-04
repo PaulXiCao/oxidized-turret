@@ -74,6 +74,8 @@ impl Game {
             still_running: true,
             current_level: 1,
             max_level: 10,
+            game_phase: GamePhase::Building,
+            gold: 3,
             tick: 0,
         };
         state.creep_path = compute_creep_path(&state).unwrap();
@@ -116,6 +118,15 @@ impl Game {
     }
 
     pub fn build_tower(&mut self, x: f32, y: f32) {
+        match self.state.game_phase {
+            GamePhase::Fighting => return,
+            _ => (),
+        }
+
+        if self.state.gold == 0 {
+            return;
+        }
+
         if x < 0.0 || y < 0.0 {
             return;
         }
@@ -142,6 +153,9 @@ impl Game {
             last_shot: self.state.tick,
             range: 100.0,
         });
+
+        // todo: implement variable tower costs
+        self.state.gold -= 1;
 
         match compute_creep_path(&self.state) {
             Some(p) => self.state.creep_path = p,
@@ -171,6 +185,18 @@ impl Game {
     pub fn update_state(&mut self) {
         if !self.state.still_running {
             return;
+        }
+
+        match self.state.game_phase {
+            GamePhase::Building => {
+                // todo: let player finish building phase without spending all gold
+                if self.state.gold == 0 {
+                    self.state.game_phase = GamePhase::Fighting;
+                } else {
+                    return;
+                }
+            }
+            _ => (),
         }
 
         if (self.state.tick - self.state.last_spawn > 60) && (self.state.unspawned_creeps > 0) {
@@ -224,9 +250,12 @@ impl Game {
             self.state.current_level += 1;
             if self.state.current_level > self.state.max_level {
                 self.state.still_running = false;
-                return;
             }
             self.state.unspawned_creeps = self.state.creep_count_per_level;
+            self.state.gold += 5; // todo: gold for finishing level should increase
+            self.state.game_phase = GamePhase::Building;
+            self.state.particles.clear();
+            return;
         }
 
         for turret in self.state.turrets.iter_mut() {
@@ -283,6 +312,7 @@ impl Game {
                 particles_to_remove.push(particle_item.item_ref);
                 if target_creep.health == 1 {
                     self.state.creeps.remove(particle.target.clone());
+                    self.state.gold += 1; // todo: gold per killed creep depending on level?
                 } else {
                     target_creep.health -= 1;
                 }
@@ -299,6 +329,12 @@ impl Game {
         }
         self.state.tick += 1;
     }
+}
+
+#[derive(Clone)]
+enum GamePhase {
+    Building,
+    Fighting,
 }
 
 #[derive(Clone)]
@@ -320,6 +356,8 @@ pub struct State {
     pub still_running: bool,
     pub current_level: u32,
     pub max_level: u32,
+    game_phase: GamePhase,
+    gold: u32,
 
     tick: u32,
 }

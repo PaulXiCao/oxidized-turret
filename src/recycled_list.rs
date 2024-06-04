@@ -85,6 +85,16 @@ impl<T> RecycledList<T> {
         self.items.len() == self.free_list.len()
     }
 
+    pub fn clear(&mut self) {
+        if self.is_empty() {
+            return;
+        }
+        let mut items_to_remove: Vec<RecycledListRef> = vec![];
+        items_to_remove.reserve(self.items.len() - self.free_list.len());
+        self.enumerate().for_each(|x| items_to_remove.push(x.item_ref));
+        items_to_remove.iter().for_each(|x| self.remove(*x));
+    }
+
     pub fn enumerate(&self) -> impl Iterator<Item = &RecycledListItem<T>> {
         self.items.iter().filter(|x| x.item_ref.id != 0)
     }
