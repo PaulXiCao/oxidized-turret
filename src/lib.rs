@@ -5,7 +5,7 @@ mod recycled_list;
 mod utils;
 
 use entities::*;
-use external::{ExternalState, ExternalTurret, TurretRef};
+use external::{ExternalState, ExternalTurret, GameResult, TurretRef};
 use path::find_path;
 use recycled_list::{RecycledList, RecycledListRef};
 use utils::{
@@ -68,6 +68,8 @@ impl Game {
             creeps: RecycledList::new(),
             particles: RecycledList::new(),
             cell_length: 30.0,
+            health: 10,
+            still_running: true,
             tick: 0,
         };
         state.creep_path = compute_creep_path(&state).unwrap();
@@ -77,6 +79,14 @@ impl Game {
 
     pub fn get_state(&self) -> ExternalState {
         let state = &self.state;
+
+        let game_result = if state.still_running {
+            GameResult::StillRunning
+        } else if state.health > 0 {
+            GameResult::PlayerWon
+        } else {
+            GameResult::CreepsWon
+        };
 
         ExternalState {
             board_dimension_x: state.board_dimension_x as f32 * state.cell_length,
@@ -95,6 +105,8 @@ impl Game {
             particles: state.particles.iter().map(|x| *x).collect(),
             creeps: state.creeps.iter().map(|x| *x).collect(),
             cell_length: state.cell_length,
+            health: state.health,
+            game_result,
         }
     }
 
@@ -152,6 +164,10 @@ impl Game {
     }
 
     pub fn update_state(&mut self) {
+        if !self.state.still_running {
+            return;
+        }
+
         if self.state.tick - self.state.last_spawn > 60 {
             self.state.last_spawn = self.state.tick;
             self.state.creeps.add(Creep {
@@ -187,6 +203,11 @@ impl Game {
             );
             if d < 5.0 {
                 creeps_to_remove.push(creep_item.item_ref.clone());
+                self.state.health -= 1;
+                if self.state.health == 0 {
+                    self.state.still_running = false;
+                    return;
+                }
             }
         }
         for creep_to_remove in creeps_to_remove.iter() {
@@ -278,6 +299,9 @@ pub struct State {
     pub creeps: RecycledList<Creep>,
     pub particles: RecycledList<Particle>,
     pub cell_length: f32,
+    pub health: u32,
+    pub still_running: bool,
+
     tick: u32,
 }
 

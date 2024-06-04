@@ -17,6 +17,14 @@ pub struct TurretRef {
     pub turret_ref: RecycledListRef,
 }
 
+#[wasm_bindgen]
+#[derive(Clone, Copy)]
+pub enum GameResult {
+    StillRunning,
+    CreepsWon,
+    PlayerWon,
+}
+
 #[wasm_bindgen(getter_with_clone)]
 #[derive(Clone)]
 pub struct ExternalState {
@@ -30,4 +38,6 @@ pub struct ExternalState {
     pub creeps: Vec<Creep>,
     pub particles: Vec<Particle>,
     pub cell_length: f32,
+    pub health: u32,
+    pub game_result: GameResult,
 }

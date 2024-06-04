@@ -48,7 +48,7 @@ wasm-pack build --out-dir web/src/wasm
 - [x] remove creeps when they die
 - [x] path finding for creeps (towers block creeps)
 - [x] tower targeting logic (with range)
-- [ ] you loose health if creep reaches target
+- [x] you loose health if creep reaches target
 - [ ] you win if all creeps of a level are dead
 - [ ] game phases (build, animation)
 - [x] build towers
@@ -66,7 +66,7 @@ wasm-pack build --out-dir web/src/wasm
 - [x] fullscreen + resize
 - [x] Simple Tower Building UI
 - [x] display path of creeps
-- [ ] display score and health
+- [ ] display score, health, current level, and game resolution (who won)
 - [ ] display tower range on click
 - [ ] higher frame rates than 60 FPS
 - [ ] support mobile devices (drag, pinch zoom, ...)

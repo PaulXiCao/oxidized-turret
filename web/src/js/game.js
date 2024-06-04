@@ -1,4 +1,4 @@
-import { ExternalState } from "../wasm/oxidized_turret_bg.js";
+import { ExternalState, GameResult } from "../wasm/oxidized_turret_bg.js";
 import { Canvas } from "./Canvas.js";
 import { Art } from "./Art.js";
 import { clamp } from "./utils.js";
@@ -22,6 +22,13 @@ export function createGameCanvas(htmlCanvas) {
      * @param {ExternalState} state
      */
     drawState(state, time) {
+      switch (state.game_result) {
+        case GameResult.PlayerWon:
+          alert("player won!!");
+        case GameResult.CreepsWon:
+          alert("creeps won!!");
+        default:;
+      }
       gameArt.clear();
       gameArt.drawMap(state, time);
 
