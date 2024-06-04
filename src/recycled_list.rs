@@ -81,6 +81,10 @@ impl<T> RecycledList<T> {
         }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.items.len() == self.free_list.len()
+    }
+
     pub fn enumerate(&self) -> impl Iterator<Item = &RecycledListItem<T>> {
         self.items.iter().filter(|x| x.item_ref.id != 0)
     }

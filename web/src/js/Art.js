@@ -52,12 +52,12 @@ export class Art {
     });
   }
 
-  drawCreep(creep) {
+  drawCreep(creep, current_level) {
     this.canvas.fillTriangle({
       x: creep.pos.x,
       y: creep.pos.y,
       size: CREEP_SIZE,
-      color: "yellow",
+      color: current_level == "1" ? "yellow" : "red",
     });
 
     const healthPercentage = creep.health / creep.max_health;

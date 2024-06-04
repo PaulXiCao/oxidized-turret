@@ -64,12 +64,16 @@ impl Game {
             creep_goal: GridPosition { x: 19, y: 9 },
             creep_path: vec![],
             last_spawn: 0,
+            unspawned_creeps: 3,
+            creep_count_per_level: 3,
             turrets,
             creeps: RecycledList::new(),
             particles: RecycledList::new(),
             cell_length: 30.0,
             health: 10,
             still_running: true,
+            current_level: 1,
+            max_level: 10,
             tick: 0,
         };
         state.creep_path = compute_creep_path(&state).unwrap();
@@ -82,7 +86,7 @@ impl Game {
 
         let game_result = if state.still_running {
             GameResult::StillRunning
-        } else if state.health > 0 {
+        } else if state.current_level > state.max_level {
             GameResult::PlayerWon
         } else {
             GameResult::CreepsWon
@@ -107,6 +111,7 @@ impl Game {
             cell_length: state.cell_length,
             health: state.health,
             game_result,
+            current_level: state.current_level,
         }
     }
 
@@ -168,11 +173,12 @@ impl Game {
             return;
         }
 
-        if self.state.tick - self.state.last_spawn > 60 {
+        if (self.state.tick - self.state.last_spawn > 60) && (self.state.unspawned_creeps > 0) {
             self.state.last_spawn = self.state.tick;
+            self.state.unspawned_creeps -= 1;
             self.state.creeps.add(Creep {
                 pos: to_creep_position(self.state.creep_spawn, self.state.cell_length),
-                health: 10,
+                health: 3,
                 max_health: 10,
                 next_goal: 1,
                 ticks_walked: 0,
@@ -212,6 +218,15 @@ impl Game {
         }
         for creep_to_remove in creeps_to_remove.iter() {
             self.state.creeps.remove(creep_to_remove.clone());
+        }
+
+        if (self.state.unspawned_creeps == 0) && self.state.creeps.is_empty() {
+            self.state.current_level += 1;
+            if self.state.current_level > self.state.max_level {
+                self.state.still_running = false;
+                return;
+            }
+            self.state.unspawned_creeps = self.state.creep_count_per_level;
         }
 
         for turret in self.state.turrets.iter_mut() {
@@ -294,6 +309,8 @@ pub struct State {
     pub creep_spawn: GridPosition,
     pub creep_goal: GridPosition,
     last_spawn: u32,
+    unspawned_creeps: u32,
+    creep_count_per_level: u32,
     pub creep_path: Vec<FloatPosition>,
     pub turrets: RecycledList<Turret>,
     pub creeps: RecycledList<Creep>,
@@ -301,6 +318,8 @@ pub struct State {
     pub cell_length: f32,
     pub health: u32,
     pub still_running: bool,
+    pub current_level: u32,
+    pub max_level: u32,
 
     tick: u32,
 }

@@ -24,9 +24,9 @@ export function createGameCanvas(htmlCanvas) {
     drawState(state, time) {
       switch (state.game_result) {
         case GameResult.PlayerWon:
-          alert("player won!!");
+          alert("You won with " + state.health + " hp!");
         case GameResult.CreepsWon:
-          alert("creeps won!!");
+          alert("You lost at level " + state.current_level);
         default:;
       }
       gameArt.clear();
@@ -36,7 +36,7 @@ export function createGameCanvas(htmlCanvas) {
         gameArt.drawTurret(turret, state.cell_length);
       }
       for (const creep of state.creeps) {
-        gameArt.drawCreep(creep);
+        gameArt.drawCreep(creep, state.current_level);
       }
       for (const particle of state.particles) {
         gameArt.drawParticle(particle);

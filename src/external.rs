@@ -40,4 +40,5 @@ pub struct ExternalState {
     pub cell_length: f32,
     pub health: u32,
     pub game_result: GameResult,
+    pub current_level: u32,
 }
