@@ -33,7 +33,7 @@ pub fn find_path(
             }
 
             for turret in turrets.iter() {
-                if let Some(index) = successors.iter().position(|x| *x == turret.pos) {
+                if let Some(index) = successors.iter().position(|x| *x == turret.general_data.pos) {
                     successors.remove(index);
                 }
             }

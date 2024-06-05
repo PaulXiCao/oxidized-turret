@@ -53,24 +53,6 @@ impl Game {
     pub fn new() -> Self {
         utils::set_panic_hook();
 
-        let mut turrets: RecycledList<Turret> = RecycledList::new();
-
-        let turret0 = Turret {
-            pos: GridPosition { x: 2, y: 3 },
-            rotation: 0.0,
-            last_shot: 0,
-            range: 100.0,
-        };
-        let turret1 = Turret {
-            pos: GridPosition { x: 1, y: 9 },
-            rotation: 0.0,
-            last_shot: 0,
-            range: 100.0,
-        };
-
-        turrets.add(turret0);
-        turrets.add(turret1);
-
         let mut state = State {
             board_dimension_x: 20,
             board_dimension_y: 15,
@@ -80,7 +62,7 @@ impl Game {
             last_spawn: 0,
             unspawned_creeps: 3,
             creep_count_per_level: 3,
-            turrets,
+            turrets: RecycledList::new(),
             creeps: RecycledList::new(),
             particles: RecycledList::new(),
             cell_length: 30.0,
@@ -122,8 +104,11 @@ impl Game {
                 .turrets
                 .iter()
                 .map(|x| ExternalTurret {
-                    pos: to_float_position(x.pos, state.cell_length),
-                    rotation: x.rotation,
+                    pos: to_float_position(x.general_data.pos, state.cell_length),
+                    rotation: match &x.specific_data {
+                        SpecificData::Basic(d) => d.rotation,
+                        _ => 0.0,
+                    },
                 })
                 .collect(),
             particles: state.particles.iter().map(|x| *x).collect(),
@@ -159,17 +144,20 @@ impl Game {
             .state
             .turrets
             .iter()
-            .find(|x| x.pos == grid_pos)
+            .find(|x| x.general_data.pos == grid_pos)
             .is_some()
         {
             return;
         }
 
         let tower_ref = self.state.turrets.add(Turret {
-            pos: grid_pos,
-            rotation: 0.0,
-            last_shot: self.state.tick,
-            range: 100.0,
+            general_data: GeneralData {
+                pos: grid_pos,
+                last_shot: self.state.tick,
+                level: 0,
+                kind: TurretKind::Basic,
+            },
+            specific_data: SpecificData::Basic(BasicData { rotation: 0.0 }),
         });
 
         match compute_creep_paths(&self.state) {
@@ -187,13 +175,16 @@ impl Game {
             .state
             .turrets
             .enumerate()
-            .find(|x| x.data.pos == grid_pos);
+            .find(|x| x.data.general_data.pos == grid_pos);
         match value {
             None => None,
             Some(x) => Some(TurretRef {
                 turret: ExternalTurret {
-                    pos: to_float_position(x.data.pos, self.state.cell_length),
-                    rotation: x.data.rotation,
+                    pos: to_float_position(x.data.general_data.pos, self.state.cell_length),
+                    rotation: match &x.data.specific_data {
+                        SpecificData::Basic(d) => d.rotation,
+                        _ => 0.0,
+                    },
                 },
                 turret_ref: x.item_ref.clone(),
             }),
@@ -285,10 +276,18 @@ impl Game {
         }
 
         for turret in self.state.turrets.iter_mut() {
-            let x = (turret.pos.x as f32 + 0.5) * self.state.cell_length
-                + self.state.cell_length / 2.0 * turret.rotation.cos();
-            let y = (turret.pos.y as f32 + 0.5) * self.state.cell_length
-                + self.state.cell_length / 2.0 * turret.rotation.sin();
+            let turret_rotation = match &turret.specific_data {
+                SpecificData::Basic(d) => d.rotation,
+                _ => 0.0,
+            };
+            let turret_data = match &turret.general_data.kind {
+                TurretKind::Basic => BASIC[turret.general_data.level as usize].clone(),
+            };
+
+            let x = (turret.general_data.pos.x as f32 + 0.5) * self.state.cell_length
+                + self.state.cell_length / 2.0 * turret_rotation.cos();
+            let y = (turret.general_data.pos.y as f32 + 0.5) * self.state.cell_length
+                + self.state.cell_length / 2.0 * turret_rotation.sin();
             let turret_pos = FloatPosition { x, y };
             let mut distances = vec![];
             for creep_item in self.state.creeps.enumerate() {
@@ -302,18 +301,21 @@ impl Game {
                 break;
             }
 
-            if target_creep_item_option.unwrap().0 > turret.range {
+            if target_creep_item_option.unwrap().0 > turret_data.range {
                 continue;
             }
 
             let target_creep_item = target_creep_item_option.unwrap().1;
             let target_creep = target_creep_item.data;
 
-            let dx = target_creep.pos.x - turret.pos.x as f32 * self.state.cell_length;
-            let dy = target_creep.pos.y - turret.pos.y as f32 * self.state.cell_length;
-            turret.rotation = dy.atan2(dx);
-            if self.state.tick > turret.last_shot + 60 {
-                turret.last_shot = self.state.tick;
+            let dx = target_creep.pos.x - turret.general_data.pos.x as f32 * self.state.cell_length;
+            let dy = target_creep.pos.y - turret.general_data.pos.y as f32 * self.state.cell_length;
+
+            match &mut turret.specific_data {
+                SpecificData::Basic(d) => d.rotation = dy.atan2(dx),
+            };
+            if self.state.tick > turret.general_data.last_shot + 60 {
+                turret.general_data.last_shot = self.state.tick;
                 self.state.particles.add(Particle {
                     pos: turret_pos,
                     target: target_creep_item.item_ref.clone(),

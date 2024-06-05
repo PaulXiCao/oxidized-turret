@@ -71,7 +71,7 @@ wasm-pack build --out-dir web/src/wasm
 - [ ] higher frame rates than 60 FPS
 - [ ] support mobile devices (drag, pinch zoom, ...)
 - [ ] remove towers
-- [ ] intermediate goals: implementing multiple intermediate goals broke path offsetting (into cell center) and (intermediate) goal(s) are not shown anymore
+- [x] intermediate goals: implementing multiple intermediate goals broke path offsetting (into cell center) and (intermediate) goal(s) are not shown anymore
 
 ### Other
 
