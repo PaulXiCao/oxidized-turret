@@ -98,7 +98,7 @@ export class Art {
       color: "rgba(0, 255, 0, 0.3)",
     });
 
-    for (const goal in state.creep_goals) {
+    for (const goal of state.creep_goals) {
       this.canvas.fillRect({
         x: goal.x,
         y: goal.y,
