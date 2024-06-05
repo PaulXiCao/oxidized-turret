@@ -41,7 +41,7 @@ fn compute_creep_paths(state: &State) -> Option<Vec<Vec<FloatPosition>>> {
             .map(|path| {
                 path.0
                     .iter()
-                    .map(|grid_pos| to_float_position(*grid_pos, state.cell_length))
+                    .map(|grid_pos| to_creep_position(*grid_pos, state.cell_length))
                     .collect()
             })
             .collect(),
