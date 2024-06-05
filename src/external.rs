@@ -32,7 +32,7 @@ pub struct ExternalState {
     pub board_dimension_x: f32, // no. of grid points in x-direction
     pub board_dimension_y: f32, // no. of grid points in y-direction
     pub creep_spawn: FloatPosition,
-    pub creep_goal: FloatPosition,
+    pub creep_goals: Vec<FloatPosition>,
     pub creep_path: Vec<FloatPosition>,
     pub turrets: Vec<ExternalTurret>,
     pub creeps: Vec<Creep>,

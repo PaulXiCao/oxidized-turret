@@ -98,13 +98,15 @@ export class Art {
       color: "rgba(0, 255, 0, 0.3)",
     });
 
-    this.canvas.fillRect({
-      x: state.creep_goal.x,
-      y: state.creep_goal.y,
-      width: state.cell_length,
-      height: state.cell_length,
-      color: "rgba(255, 0, 0, 0.3)",
-    });
+    for (const goal in state.creep_goals) {
+      this.canvas.fillRect({
+        x: goal.x,
+        y: goal.y,
+        width: state.cell_length,
+        height: state.cell_length,
+        color: "rgba(255, 0, 0, 0.3)",
+      });
+    }
   }
 
   clear() {

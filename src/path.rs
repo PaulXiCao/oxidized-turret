@@ -1,12 +1,18 @@
-use crate::utils::{distance, to_float_position, GridPosition};
-use crate::State;
+use crate::recycled_list::RecycledList;
+use crate::utils::GridPosition;
+use crate::Turret;
 
 use pathfinding::prelude::astar;
 
-pub fn find_path(state: &State) -> Option<(Vec<GridPosition>, u32)> {
-    let goal = state.creep_goal;
+pub fn find_path(
+    start: GridPosition,
+    goal: GridPosition,
+    nx: u32,
+    ny: u32,
+    turrets: &RecycledList<Turret>,
+) -> Option<(Vec<GridPosition>, u32)> {
     astar(
-        &state.creep_spawn,
+        &start,
         |p| -> Vec<(GridPosition, u32)> {
             let x = p.x;
             let y = p.y;
@@ -19,28 +25,25 @@ pub fn find_path(state: &State) -> Option<(Vec<GridPosition>, u32)> {
             if y > 0 {
                 successors.push(GridPosition { x: x + 0, y: y - 1 });
             }
-            if x + 1 < state.board_dimension_x {
+            if x + 1 < nx {
                 successors.push(GridPosition { x: x + 1, y: y + 0 });
             }
-            if y + 1 < state.board_dimension_y {
+            if y + 1 < ny {
                 successors.push(GridPosition { x: x + 0, y: y + 1 });
             }
 
-            for turret in state.turrets.iter() {
-                let index = successors.iter().position(|x| *x == turret.pos);
-                if index.is_some() {
-                    successors.remove(index.unwrap());
+            for turret in turrets.iter() {
+                if let Some(index) = successors.iter().position(|x| *x == turret.pos) {
+                    successors.remove(index);
                 }
             }
 
             successors.into_iter().map(|p| (p, 1)).collect()
         },
         |p| {
-            distance(
-                to_float_position(goal, state.cell_length),
-                to_float_position(*p, state.cell_length),
-            ) as u32
-                / 2
+            let dx = goal.x as i32 - p.x as i32;
+            let dy = goal.y as i32 - p.y as i32;
+            (dx.abs() + dy.abs()) as u32
         },
         |p| *p == goal,
     )
@@ -48,20 +51,14 @@ pub fn find_path(state: &State) -> Option<(Vec<GridPosition>, u32)> {
 
 #[test]
 fn test_find_path() {
-    use crate::recycled_list::RecycledList;
-    let state = State {
-        board_dimension_x: 20,
-        board_dimension_y: 15,
-        creep_spawn: GridPosition { x: 0, y: 0 },
-        creep_goal: GridPosition { x: 0, y: 1 },
-        creep_path: vec![],
-        last_spawn: 0,
-        turrets: RecycledList::new(),
-        creeps: RecycledList::new(),
-        particles: RecycledList::new(),
-        cell_length: 30.0,
-        tick: 0,
-    };
 
-    assert!(Option::is_some(&find_path(&state)));
+    let start = GridPosition { x: 0, y: 0 };
+    let goal = GridPosition { x: 0, y: 10 };
+    let nx = 20;
+    let ny = 15;
+    let turrets = RecycledList::new();
+
+    let path = find_path(start, goal, nx, ny, &turrets);
+
+    assert!(Option::is_some(&path));
 }
