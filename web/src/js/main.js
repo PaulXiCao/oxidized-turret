@@ -13,7 +13,7 @@ const importObject = {
   "./oxidized_turret_bg.js": wasm,
 };
 await WebAssembly.instantiateStreaming(
-  fetch("/wasm/oxidized_turret_bg.wasm"),
+  fetch("./wasm/oxidized_turret_bg.wasm"),
   importObject
 ).then((obj) => {
   // expose WASM exports to JavaScript bindings
