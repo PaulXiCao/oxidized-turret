@@ -154,11 +154,11 @@ impl Game {
             range: 100.0,
         });
 
-        // todo: implement variable tower costs
-        self.state.gold -= 1;
-
         match compute_creep_path(&self.state) {
-            Some(p) => self.state.creep_path = p,
+            Some(p) => {
+                self.state.creep_path = p;
+                self.state.gold -= 1; // todo: implement variable tower costs
+            }
             _ => self.state.turrets.remove(tower_ref),
         }
     }
