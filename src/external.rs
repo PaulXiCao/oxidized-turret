@@ -1,6 +1,7 @@
 use crate::entities::{Creep, Particle};
 use crate::recycled_list::RecycledListRef;
-use crate::utils::FloatPosition;
+use crate::utils::{to_float_position, FloatPosition};
+use crate::{SpecificData, State, Turret};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -8,6 +9,15 @@ use wasm_bindgen::prelude::*;
 pub struct ExternalTurret {
     pub pos: FloatPosition,
     pub rotation: f32, // orientation/angle in RAD
+}
+
+pub fn to_external_turret(turret: &Turret, state: &State) -> ExternalTurret {
+    ExternalTurret {
+        pos: to_float_position(turret.general_data.pos, state.cell_length),
+        rotation: match &turret.specific_data {
+            SpecificData::Basic(d) => d.rotation,
+        },
+    }
 }
 
 #[wasm_bindgen]

@@ -5,7 +5,7 @@ mod recycled_list;
 mod utils;
 
 use entities::*;
-use external::{ExternalState, ExternalTurret, GameResult, TurretRef};
+use external::{to_external_turret, ExternalState, ExternalTurret, GameResult, TurretRef};
 use path::find_path;
 use recycled_list::{RecycledList, RecycledListRef};
 use utils::{
@@ -110,13 +110,7 @@ impl Game {
             turrets: state
                 .turrets
                 .iter()
-                .map(|x| ExternalTurret {
-                    pos: to_float_position(x.general_data.pos, state.cell_length),
-                    rotation: match &x.specific_data {
-                        SpecificData::Basic(d) => d.rotation,
-                        _ => 0.0,
-                    },
-                })
+                .map(|x| to_external_turret(x, state))
                 .collect(),
             particles: state.particles.iter().map(|x| *x).collect(),
             creeps: state.creeps.iter().map(|x| *x).collect(),
