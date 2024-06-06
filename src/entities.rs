@@ -5,13 +5,11 @@ use crate::{
     utils::{FloatPosition, GridPosition},
 };
 
-
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
 pub struct WalkingProgress {
     pub current_goal: u32,
     pub steps_taken: u32,
-    pub ticks_walked_since_previous_step: u32,
 }
 
 #[wasm_bindgen]

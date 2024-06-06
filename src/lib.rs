@@ -18,7 +18,7 @@ pub struct Game {
     state: State,
 }
 
-fn compute_creep_paths(state: &State) -> Option<Vec<Vec<FloatPosition>>> {
+fn compute_creep_paths(state: &State) -> Option<Vec<FloatPosition>> {
     let mut paths = vec![];
 
     let mut start = state.creep_spawn.clone();
@@ -35,17 +35,24 @@ fn compute_creep_paths(state: &State) -> Option<Vec<Vec<FloatPosition>>> {
         }
         start = *goal;
     }
-    Some(
-        paths
-            .iter()
-            .map(|path| {
-                path.0
-                    .iter()
-                    .map(|grid_pos| to_creep_position(*grid_pos, state.cell_length))
-                    .collect()
-            })
-            .collect(),
-    )
+
+    let mut result: Vec<Vec<FloatPosition>> = paths
+        .iter()
+        .map(|path| -> Vec<FloatPosition> {
+            path.0
+                .iter()
+                .map(|grid_pos| to_creep_position(*grid_pos, state.cell_length))
+                .collect()
+        })
+        .collect();
+
+    // remove duplicate goals, due to the ending point of a subpath being equal
+    // to the starting point of the next subpath
+    for i in 0..result.len() - 1 {
+        (&mut result)[i].pop();
+    }
+
+    Some(result.concat())
 }
 
 #[wasm_bindgen]
@@ -76,7 +83,7 @@ impl Game {
             board_dimension_y: 15,
             creep_spawn: GridPosition { x: 0, y: 9 },
             creep_goals: vec![GridPosition { x: 10, y: 5 }, GridPosition { x: 19, y: 9 }],
-            creep_paths: vec![],
+            creep_path: vec![],
             last_spawn: 0,
             unspawned_creeps: 3,
             creep_count_per_level: 3,
@@ -92,7 +99,7 @@ impl Game {
             gold: 3,
             tick: 0,
         };
-        state.creep_paths = compute_creep_paths(&state).unwrap();
+        state.creep_path = compute_creep_paths(&state).unwrap();
 
         Game { state }
     }
@@ -117,7 +124,7 @@ impl Game {
                 .iter()
                 .map(|x| to_float_position(*x, state.cell_length))
                 .collect(),
-            creep_path: state.creep_paths.concat(),
+            creep_path: state.creep_path.clone(),
             turrets: state
                 .turrets
                 .iter()
@@ -174,7 +181,7 @@ impl Game {
 
         match compute_creep_paths(&self.state) {
             Some(p) => {
-                self.state.creep_paths = p;
+                self.state.creep_path = p;
                 self.state.gold -= 1; // todo: implement variable tower costs
             }
             _ => self.state.turrets.remove(tower_ref),
@@ -227,7 +234,6 @@ impl Game {
                 walking: WalkingProgress {
                     current_goal: 0,
                     steps_taken: 0,
-                    ticks_walked_since_previous_step: 0,
                 },
                 speed: 10,
             });
@@ -236,34 +242,26 @@ impl Game {
         let mut creeps_to_remove: Vec<RecycledListRef> = vec![];
         for creep_item in self.state.creeps.enumerate_mut() {
             let creep = &mut creep_item.data;
-            creep.walking.ticks_walked_since_previous_step += 1;
-            if creep.walking.ticks_walked_since_previous_step >= creep.speed {
-                // enough partial steps taken -> take one full step
-                creep.walking.ticks_walked_since_previous_step = 0;
-                creep.walking.steps_taken += 1;
-                if creep.walking.steps_taken - 1
-                    == self.state.creep_paths[creep.walking.current_goal as usize].len() as u32
-                {
-                    // reached one goal
-                    creep.walking.current_goal += 1;
-                    creep.walking.steps_taken = 0;
-                    if creep.walking.current_goal as usize == self.state.creep_paths.len() {
-                        // last goal reached
-                        creeps_to_remove.push(creep_item.item_ref.clone());
-                        self.state.health -= 1;
-                        if self.state.health == 0 {
-                            self.state.still_running = false;
-                            return;
-                        }
-                    }
+            creep.walking.steps_taken += 1;
+            if creep.walking.steps_taken >= creep.speed {
+                creep.walking.current_goal += 1;
+                creep.walking.steps_taken = 0;
+            }
+            if creep.walking.current_goal == self.state.creep_path.len() as u32 - 1 {
+                creeps_to_remove.push(creep_item.item_ref.clone());
+                self.state.health -= 1;
+                if self.state.health == 0 {
+                    self.state.still_running = false;
+                    return;
                 }
+                continue;
             }
 
             {
-                let t = creep.walking.ticks_walked_since_previous_step as f32 / creep.speed as f32;
-                let path = &self.state.creep_paths[creep.walking.current_goal as usize];
-                let a = path[creep.walking.steps_taken as usize];
-                let b = path[creep.walking.steps_taken as usize + 1];
+                let t = creep.walking.steps_taken as f32 / creep.speed as f32;
+                let path = &self.state.creep_path;
+                let a = path[creep.walking.current_goal as usize];
+                let b = path[creep.walking.current_goal as usize + 1];
                 let pos = a * (1.0 - t) + b * t;
                 creep.pos = pos;
             }
@@ -373,7 +371,7 @@ pub struct State {
     last_spawn: u32,
     unspawned_creeps: u32,
     creep_count_per_level: u32,
-    pub creep_paths: Vec<Vec<FloatPosition>>,
+    pub creep_path: Vec<FloatPosition>,
     pub turrets: RecycledList<Turret>,
     pub creeps: RecycledList<Creep>,
     pub particles: RecycledList<Particle>,
