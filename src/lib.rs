@@ -298,12 +298,13 @@ impl Game {
             if target_creep_item_option.is_none() {
                 break;
             }
+            let target_creep_item = target_creep_item_option.unwrap();
 
-            if target_creep_item_option.unwrap().0 > turret_data.range {
+            if target_creep_item.0 > turret_data.range * self.state.cell_length {
                 continue;
             }
 
-            let target_creep_item = target_creep_item_option.unwrap().1;
+            let target_creep_item = target_creep_item.1;
             let target_creep = target_creep_item.data;
 
             let dx = target_creep.pos.x - turret.general_data.pos.x as f32 * self.state.cell_length;
