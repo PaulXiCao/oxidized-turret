@@ -7,6 +7,12 @@ pub struct RecycledListRef {
     index: usize,
 }
 
+impl RecycledListRef {
+    pub fn null_ref() -> Self {
+        RecycledListRef { id: 0, index: 0 }
+    }
+}
+
 #[derive(Clone)]
 pub struct RecycledListItem<T> {
     pub item_ref: RecycledListRef,
@@ -29,7 +35,28 @@ impl<T> RecycledList<T> {
         }
     }
 
+    pub fn get(&self, item_ref: RecycledListRef) -> Option<&T> {
+        if item_ref.id == 0 {
+            return None;
+        }
+
+        let item = self.items.get(item_ref.index);
+        match item {
+            Some(c) => {
+                if c.item_ref.id == item_ref.id {
+                    return Some(&c.data);
+                }
+                None
+            }
+            _ => None,
+        }
+    }
+
     pub fn get_mut(&mut self, item_ref: RecycledListRef) -> Option<&mut T> {
+        if item_ref.id == 0 {
+            return None;
+        }
+
         let item = self.items.get_mut(item_ref.index);
         match item {
             Some(c) => {
