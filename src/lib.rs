@@ -160,7 +160,6 @@ impl Game {
                 pos: grid_pos,
                 last_shot: self.state.tick,
                 level: 0,
-                kind: TurretKind::Basic,
             },
             specific_data: SpecificData::Basic(BasicData { rotation: 0.0 }),
         });
