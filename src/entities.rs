@@ -107,8 +107,8 @@ pub fn update_basic_tower(turret: &mut Turret, specific: &mut BasicData, state: 
 
     specific.rotation = dy.atan2(dx);
 
-    // if can shoot, shoot
-    if state.tick > turret.general_data.last_shot + 60 {
+    // if ready for shooting, shoot
+    if state.tick > turret.general_data.last_shot + (60.0 / turret_data.attack_speed) as u32 {
         turret.general_data.last_shot = state.tick;
         state.particles.add(Particle {
             pos: turret_pos,
