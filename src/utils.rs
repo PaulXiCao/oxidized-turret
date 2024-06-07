@@ -27,6 +27,17 @@ impl ops::Add<FloatPosition> for FloatPosition {
     }
 }
 
+impl ops::Sub<FloatPosition> for FloatPosition {
+    type Output = FloatPosition;
+
+    fn sub(self, rhs: FloatPosition) -> FloatPosition {
+        FloatPosition {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
 impl ops::Mul<f32> for FloatPosition {
     type Output = FloatPosition;
 
@@ -74,4 +85,10 @@ pub fn set_panic_hook() {
     // https://github.com/rustwasm/console_error_panic_hook#readme
     #[cfg(feature = "console_error_panic_hook")]
     console_error_panic_hook::set_once();
+}
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    pub fn log(s: &str);
 }

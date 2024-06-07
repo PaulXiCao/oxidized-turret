@@ -5,7 +5,7 @@ mod recycled_list;
 mod utils;
 
 use entities::*;
-use external::{ExternalState, ExternalTurret, GameResult, TurretRef};
+use external::{to_external_turret, ExternalState, ExternalTurret, GameResult, TurretRef};
 use path::find_path;
 use recycled_list::{RecycledList, RecycledListRef};
 use utils::{
@@ -16,19 +16,20 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub struct Game {
     state: State,
+    turret_state: RecycledList<Turret>,
 }
 
-fn compute_creep_paths(state: &State) -> Option<Vec<FloatPosition>> {
+fn compute_creep_paths(game: &Game) -> Option<Vec<FloatPosition>> {
     let mut paths = vec![];
 
-    let mut start = state.creep_spawn.clone();
-    for goal in state.creep_goals.iter() {
+    let mut start = game.state.creep_spawn.clone();
+    for goal in game.state.creep_goals.iter() {
         match find_path(
             start,
             *goal,
-            state.board_dimension_x,
-            state.board_dimension_y,
-            &state.turrets,
+            game.state.board_dimension_x,
+            game.state.board_dimension_y,
+            &game.turret_state,
         ) {
             Some(path) => paths.push(path),
             None => return None,
@@ -41,7 +42,7 @@ fn compute_creep_paths(state: &State) -> Option<Vec<FloatPosition>> {
         .map(|path| -> Vec<FloatPosition> {
             path.0
                 .iter()
-                .map(|grid_pos| to_creep_position(*grid_pos, state.cell_length))
+                .map(|grid_pos| to_creep_position(*grid_pos, game.state.cell_length))
                 .collect()
         })
         .collect();
@@ -60,16 +61,15 @@ impl Game {
     pub fn new() -> Self {
         utils::set_panic_hook();
 
-        let mut state = State {
+        let state = State {
             board_dimension_x: 20,
             board_dimension_y: 15,
             creep_spawn: GridPosition { x: 0, y: 9 },
             creep_goals: vec![GridPosition { x: 10, y: 5 }, GridPosition { x: 19, y: 9 }],
             creep_path: vec![],
             last_spawn: 0,
-            unspawned_creeps: 3,
-            creep_count_per_level: 3,
-            turrets: RecycledList::new(),
+            unspawned_creeps: 10,
+            creep_count_per_level: 10,
             creeps: RecycledList::new(),
             particles: RecycledList::new(),
             cell_length: 30.0,
@@ -81,9 +81,14 @@ impl Game {
             gold: 3,
             tick: 0,
         };
-        state.creep_path = compute_creep_paths(&state).unwrap();
 
-        Game { state }
+        let mut game = Game {
+            state,
+            turret_state: RecycledList::new(),
+        };
+        game.state.creep_path = compute_creep_paths(&game).unwrap();
+
+        game
     }
 
     pub fn get_state(&self) -> ExternalState {
@@ -107,16 +112,10 @@ impl Game {
                 .map(|x| to_float_position(*x, state.cell_length))
                 .collect(),
             creep_path: state.creep_path.clone(),
-            turrets: state
-                .turrets
+            turrets: self
+                .turret_state
                 .iter()
-                .map(|x| ExternalTurret {
-                    pos: to_float_position(x.general_data.pos, state.cell_length),
-                    rotation: match &x.specific_data {
-                        SpecificData::Basic(d) => d.rotation,
-                        _ => 0.0,
-                    },
-                })
+                .map(|x| to_external_turret(x, state))
                 .collect(),
             particles: state.particles.iter().map(|x| *x).collect(),
             creeps: state.creeps.iter().map(|x| *x).collect(),
@@ -148,8 +147,7 @@ impl Game {
         }
 
         if self
-            .state
-            .turrets
+            .turret_state
             .iter()
             .find(|x| x.general_data.pos == grid_pos)
             .is_some()
@@ -157,30 +155,31 @@ impl Game {
             return;
         }
 
-        let tower_ref = self.state.turrets.add(Turret {
+        let tower_ref = self.turret_state.add(Turret {
             general_data: GeneralData {
                 pos: grid_pos,
                 last_shot: self.state.tick,
                 level: 0,
-                kind: TurretKind::Basic,
             },
-            specific_data: SpecificData::Basic(BasicData { rotation: 0.0 }),
+            specific_data: SpecificData::Basic(BasicData {
+                rotation: 0.0,
+                target: RecycledListRef::null_ref(),
+            }),
         });
 
-        match compute_creep_paths(&self.state) {
+        match compute_creep_paths(self) {
             Some(p) => {
                 self.state.creep_path = p;
                 self.state.gold -= 1; // todo: implement variable tower costs
             }
-            _ => self.state.turrets.remove(tower_ref),
+            _ => self.turret_state.remove(tower_ref),
         }
     }
 
     pub fn get_tower_at(self, x: f32, y: f32) -> Option<TurretRef> {
         let grid_pos = to_grid_position(FloatPosition { x, y }, self.state.cell_length);
         let value = self
-            .state
-            .turrets
+            .turret_state
             .enumerate()
             .find(|x| x.data.general_data.pos == grid_pos);
         match value {
@@ -190,7 +189,6 @@ impl Game {
                     pos: to_float_position(x.data.general_data.pos, self.state.cell_length),
                     rotation: match &x.data.specific_data {
                         SpecificData::Basic(d) => d.rotation,
-                        _ => 0.0,
                     },
                 },
                 turret_ref: x.item_ref.clone(),
@@ -215,18 +213,18 @@ impl Game {
             _ => (),
         }
 
-        if (self.state.tick - self.state.last_spawn > 60) && (self.state.unspawned_creeps > 0) {
+        if (self.state.tick - self.state.last_spawn > 120) && (self.state.unspawned_creeps > 0) {
             self.state.last_spawn = self.state.tick;
             self.state.unspawned_creeps -= 1;
             self.state.creeps.add(Creep {
                 pos: to_creep_position(self.state.creep_spawn, self.state.cell_length),
-                health: 3,
-                max_health: 10,
+                health: 34.0,
+                max_health: 34.0,
                 walking: WalkingProgress {
                     current_goal: 0,
                     steps_taken: 0,
                 },
-                speed: 10,
+                speed: 60,
             });
         }
 
@@ -273,53 +271,8 @@ impl Game {
             return;
         }
 
-        for turret in self.state.turrets.iter_mut() {
-            let turret_rotation = match &turret.specific_data {
-                SpecificData::Basic(d) => d.rotation,
-                _ => 0.0,
-            };
-            let turret_data = match &turret.general_data.kind {
-                TurretKind::Basic => BASIC[turret.general_data.level as usize].clone(),
-            };
-
-            let x = (turret.general_data.pos.x as f32 + 0.5) * self.state.cell_length
-                + self.state.cell_length / 2.0 * turret_rotation.cos();
-            let y = (turret.general_data.pos.y as f32 + 0.5) * self.state.cell_length
-                + self.state.cell_length / 2.0 * turret_rotation.sin();
-            let turret_pos = FloatPosition { x, y };
-            let mut distances = vec![];
-            for creep_item in self.state.creeps.enumerate() {
-                let d = distance(creep_item.data.pos, turret_pos);
-                distances.push((d, creep_item));
-            }
-            let target_creep_item_option = distances
-                .iter()
-                .min_by_key(|(d, _item_ref)| (*d * 100.0) as i32);
-            if target_creep_item_option.is_none() {
-                break;
-            }
-            let target_creep_item = target_creep_item_option.unwrap();
-
-            if target_creep_item.0 > turret_data.range * self.state.cell_length {
-                continue;
-            }
-
-            let target_creep_item = target_creep_item.1;
-            let target_creep = target_creep_item.data;
-
-            let dx = target_creep.pos.x - turret.general_data.pos.x as f32 * self.state.cell_length;
-            let dy = target_creep.pos.y - turret.general_data.pos.y as f32 * self.state.cell_length;
-
-            match &mut turret.specific_data {
-                SpecificData::Basic(d) => d.rotation = dy.atan2(dx),
-            };
-            if self.state.tick > turret.general_data.last_shot + 60 {
-                turret.general_data.last_shot = self.state.tick;
-                self.state.particles.add(Particle {
-                    pos: turret_pos,
-                    target: target_creep_item.item_ref.clone(),
-                });
-            }
+        for turret in self.turret_state.iter_mut() {
+            turret.tick(&mut self.state);
         }
 
         let mut particles_to_remove: Vec<RecycledListRef> = vec![];
@@ -337,17 +290,16 @@ impl Game {
             let d = distance(target_creep.pos, particle.pos);
             if d < 5.0 {
                 particles_to_remove.push(particle_item.item_ref);
-                if target_creep.health == 1 {
+                target_creep.health -= particle.damage;
+                if target_creep.health <= 0.0 {
                     self.state.creeps.remove(particle.target.clone());
                     self.state.gold += 1; // todo: gold per killed creep depending on level?
-                } else {
-                    target_creep.health -= 1;
                 }
             } else {
                 let dx = target_creep.pos.x - particle.pos.x;
                 let dy = target_creep.pos.y - particle.pos.y;
-                particle.pos.x += (dx / d) * 5.0;
-                particle.pos.y += (dy / d) * 5.0;
+                particle.pos.x += (dx / d) * particle.speed;
+                particle.pos.y += (dy / d) * particle.speed;
             }
         }
 
@@ -375,7 +327,6 @@ pub struct State {
     unspawned_creeps: u32,
     creep_count_per_level: u32,
     pub creep_path: Vec<FloatPosition>,
-    pub turrets: RecycledList<Turret>,
     pub creeps: RecycledList<Creep>,
     pub particles: RecycledList<Particle>,
     pub cell_length: f32,
