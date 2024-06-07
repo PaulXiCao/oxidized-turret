@@ -17,8 +17,8 @@ pub struct WalkingProgress {
 #[derive(Clone, Copy)]
 pub struct Creep {
     pub pos: FloatPosition,
-    pub health: u32,
-    pub max_health: u32,
+    pub health: f32,
+    pub max_health: f32,
     pub walking: WalkingProgress,
     pub speed: u32, // no. of ticks to walk one grid cell, lower is faster
 }
@@ -104,6 +104,7 @@ pub fn update_basic_turret(turret: &mut Turret, specific: &mut BasicData, state:
         state.particles.add(Particle {
             pos: turret_pos,
             target: target_creep_item.item_ref.clone(),
+            damage: turret_data.damage * turret_data.damage_multiplier / 100.0,
         });
     }
 }
@@ -123,4 +124,5 @@ pub struct Particle {
     // todo: remove "pub". should not leave api. this reference should not be needed for drawing. passing references
     // through api seems odd / hard to do in rust?
     pub target: RecycledListRef,
+    pub damage: f32,
 }

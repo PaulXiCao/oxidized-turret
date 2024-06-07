@@ -68,8 +68,8 @@ impl Game {
             creep_goals: vec![GridPosition { x: 10, y: 5 }, GridPosition { x: 19, y: 9 }],
             creep_path: vec![],
             last_spawn: 0,
-            unspawned_creeps: 3,
-            creep_count_per_level: 3,
+            unspawned_creeps: 10,
+            creep_count_per_level: 10,
             creeps: RecycledList::new(),
             particles: RecycledList::new(),
             cell_length: 30.0,
@@ -215,8 +215,8 @@ impl Game {
             self.state.unspawned_creeps -= 1;
             self.state.creeps.add(Creep {
                 pos: to_creep_position(self.state.creep_spawn, self.state.cell_length),
-                health: 3,
-                max_health: 10,
+                health: 34.0,
+                max_health: 34.0,
                 walking: WalkingProgress {
                     current_goal: 0,
                     steps_taken: 0,
@@ -287,11 +287,10 @@ impl Game {
             let d = distance(target_creep.pos, particle.pos);
             if d < 5.0 {
                 particles_to_remove.push(particle_item.item_ref);
-                if target_creep.health == 1 {
+                target_creep.health -= particle.damage;
+                if target_creep.health <= 0.0 {
                     self.state.creeps.remove(particle.target.clone());
                     self.state.gold += 1; // todo: gold per killed creep depending on level?
-                } else {
-                    target_creep.health -= 1;
                 }
             } else {
                 let dx = target_creep.pos.x - particle.pos.x;
