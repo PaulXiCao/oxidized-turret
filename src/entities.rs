@@ -23,6 +23,7 @@ pub struct Creep {
     pub max_health: f32,
     pub walking: WalkingProgress,
     pub speed: u32, // no. of ticks to walk one grid cell, lower is faster
+    pub gold: u32,
 }
 
 #[derive(Copy, Clone)]

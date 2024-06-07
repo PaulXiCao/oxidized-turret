@@ -65,6 +65,8 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
     },
     handleTimeStep(time) {
       gameEngine.update_state();
+      gameEngine.update_state();
+
       const gameState = gameEngine.get_state();
       gameCanvas.drawState(gameState, time);
 
