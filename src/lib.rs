@@ -161,7 +161,10 @@ impl Game {
                 last_shot: self.state.tick,
                 level: 0,
             },
-            specific_data: SpecificData::Basic(BasicData { rotation: 0.0 }),
+            specific_data: SpecificData::Basic(BasicData {
+                rotation: 0.0,
+                target: RecycledListRef::null_ref(),
+            }),
         });
 
         match compute_creep_paths(self) {

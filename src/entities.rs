@@ -1,8 +1,10 @@
+use std::f32::consts::{PI, TAU};
+
 use wasm_bindgen::prelude::*;
 
 use crate::{
-    recycled_list::RecycledListRef,
-    utils::{distance, FloatPosition, GridPosition},
+    recycled_list::{RecycledList, RecycledListItem, RecycledListRef},
+    utils::{distance, to_creep_position, FloatPosition, GridPosition},
     State,
 };
 
@@ -47,6 +49,7 @@ pub const BASIC: [Basic; 1] = [Basic {
 #[derive(Copy, Clone)]
 pub struct BasicData {
     pub rotation: f32, // orientation/angle in RAD
+    pub target: RecycledListRef,
 }
 
 #[derive(Copy, Clone)]
@@ -67,52 +70,80 @@ pub struct Turret {
     pub specific_data: SpecificData,
 }
 
-pub fn update_basic_tower(turret: &mut Turret, specific: &mut BasicData, state: &mut State) {
-    let turret_data = BASIC[turret.general_data.level as usize];
+fn find_nearest_creep(
+    creeps: &RecycledList<Creep>,
+    turret_pos: FloatPosition,
+    turret_range: f32,
+) -> Option<&RecycledListItem<Creep>> {
+    return creeps
+        .enumerate()
+        .map(|creep_item| (distance(creep_item.data.pos, turret_pos), creep_item))
+        .filter(|(d, _item_ref)| *d < turret_range)
+        .min_by_key(|(d, _item_ref)| (*d * 100.0) as i32)
+        .map_or(None, |x| Some(x.1));
+}
 
-    // the turret position is the start of the barrel, where particles are emitted
-    let x = (turret.general_data.pos.x as f32 + 0.5) * state.cell_length
-        + state.cell_length / 2.0 * specific.rotation.cos();
-    let y = (turret.general_data.pos.y as f32 + 0.5) * state.cell_length
-        + state.cell_length / 2.0 * specific.rotation.sin();
-    let turret_pos = FloatPosition { x, y };
+pub fn update_basic_tower(
+    general_data: &mut GeneralData,
+    specific: &mut BasicData,
+    state: &mut State,
+) {
+    let turret_data = BASIC[general_data.level as usize];
+    let tower_pos = to_creep_position(general_data.pos, state.cell_length);
 
-    // calculate current target
-    let mut distances = vec![];
-    for creep_item in state.creeps.enumerate() {
-        let d = distance(creep_item.data.pos, turret_pos);
-        distances.push((d, creep_item));
+    // find target
+    let target = state.creeps.get(specific.target);
+    if target.is_none() {
+        match find_nearest_creep(
+            &state.creeps,
+            tower_pos,
+            turret_data.range * state.cell_length,
+        ) {
+            Some(creep) => {
+                specific.target = creep.item_ref;
+                return update_basic_tower(general_data, specific, state);
+            }
+            None => return,
+        }
     }
-    let target_creep_item_option = distances
-        .iter()
-        .min_by_key(|(d, _item_ref)| (*d * 100.0) as i32);
-    if target_creep_item_option.is_none() {
-        return;
-    }
 
-    // range check
-    let target_creep_item = target_creep_item_option.unwrap();
-    let creep_distance = target_creep_item.0;
-    let target_creep_item = target_creep_item.1;
+    let target_creep = target.unwrap();
+    let creep_distance = distance(tower_pos, target_creep.pos);
 
     if creep_distance > turret_data.range * state.cell_length {
-        return;
+        specific.target = RecycledListRef::null_ref();
+        return update_basic_tower(general_data, specific, state);
     }
 
     // rotate towards target
-    let target_creep = target_creep_item.data;
+    let diff = target_creep.pos - tower_pos;
 
-    let dx = target_creep.pos.x - turret.general_data.pos.x as f32 * state.cell_length;
-    let dy = target_creep.pos.y - turret.general_data.pos.y as f32 * state.cell_length;
+    let mut rotation_diff = diff.y.atan2(diff.x) - specific.rotation;
+    if rotation_diff > PI {
+        rotation_diff -= TAU;
+    }
+    if rotation_diff < -PI {
+        rotation_diff += TAU;
+    }
 
-    specific.rotation = dy.atan2(dx);
+    specific.rotation += rotation_diff.signum()
+        * (turret_data.rotation_speed.to_radians() / 60.0).min(rotation_diff.abs());
 
     // if ready for shooting, shoot
-    if state.tick > turret.general_data.last_shot + (60.0 / turret_data.attack_speed) as u32 {
-        turret.general_data.last_shot = state.tick;
+    if rotation_diff.abs() < 0.01
+        && state.tick > general_data.last_shot + (60.0 / turret_data.attack_speed) as u32
+    {
+        // the turret position is the start of the barrel, where particles are emitted
+        let x = (general_data.pos.x as f32 + 0.5) * state.cell_length
+            + state.cell_length / 2.0 * specific.rotation.cos();
+        let y = (general_data.pos.y as f32 + 0.5) * state.cell_length
+            + state.cell_length / 2.0 * specific.rotation.sin();
+        let turret_pos = FloatPosition { x, y };
+
+        general_data.last_shot = state.tick;
         state.particles.add(Particle {
             pos: turret_pos,
-            target: target_creep_item.item_ref.clone(),
+            target: specific.target.clone(),
             damage: turret_data.damage * turret_data.damage_multiplier / 100.0,
             speed: turret_data.projectile_speed * state.cell_length / 60.0,
         });
@@ -120,9 +151,14 @@ pub fn update_basic_tower(turret: &mut Turret, specific: &mut BasicData, state: 
 }
 
 impl Turret {
-    pub fn tick(self: &mut Turret, state: &mut State) {
-        match self.specific_data {
-            SpecificData::Basic(mut d) => update_basic_tower(self, &mut d, state),
+    pub fn tick(&mut self, state: &mut State) {
+        let general_data = &mut self.general_data;
+        let specific_data = &mut self.specific_data;
+
+        match specific_data {
+            SpecificData::Basic(specific_data) => {
+                update_basic_tower(general_data, specific_data, state)
+            }
         }
     }
 }
