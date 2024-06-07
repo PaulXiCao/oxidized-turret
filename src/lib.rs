@@ -210,7 +210,7 @@ impl Game {
             _ => (),
         }
 
-        if (self.state.tick - self.state.last_spawn > 60) && (self.state.unspawned_creeps > 0) {
+        if (self.state.tick - self.state.last_spawn > 120) && (self.state.unspawned_creeps > 0) {
             self.state.last_spawn = self.state.tick;
             self.state.unspawned_creeps -= 1;
             self.state.creeps.add(Creep {
@@ -221,7 +221,7 @@ impl Game {
                     current_goal: 0,
                     steps_taken: 0,
                 },
-                speed: 10,
+                speed: 60,
             });
         }
 
@@ -295,8 +295,8 @@ impl Game {
             } else {
                 let dx = target_creep.pos.x - particle.pos.x;
                 let dy = target_creep.pos.y - particle.pos.y;
-                particle.pos.x += (dx / d) * 5.0;
-                particle.pos.y += (dy / d) * 5.0;
+                particle.pos.x += (dx / d) * particle.speed;
+                particle.pos.y += (dy / d) * particle.speed;
             }
         }
 

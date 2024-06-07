@@ -67,14 +67,17 @@ pub struct Turret {
     pub specific_data: SpecificData,
 }
 
-pub fn update_basic_turret(turret: &mut Turret, specific: &mut BasicData, state: &mut State) {
+pub fn update_basic_tower(turret: &mut Turret, specific: &mut BasicData, state: &mut State) {
     let turret_data = BASIC[turret.general_data.level as usize];
 
+    // the turret position is the start of the barrel, where particles are emitted
     let x = (turret.general_data.pos.x as f32 + 0.5) * state.cell_length
         + state.cell_length / 2.0 * specific.rotation.cos();
     let y = (turret.general_data.pos.y as f32 + 0.5) * state.cell_length
         + state.cell_length / 2.0 * specific.rotation.sin();
     let turret_pos = FloatPosition { x, y };
+
+    // calculate current target
     let mut distances = vec![];
     for creep_item in state.creeps.enumerate() {
         let d = distance(creep_item.data.pos, turret_pos);
@@ -86,25 +89,32 @@ pub fn update_basic_turret(turret: &mut Turret, specific: &mut BasicData, state:
     if target_creep_item_option.is_none() {
         return;
     }
-    let target_creep_item = target_creep_item_option.unwrap();
 
-    if target_creep_item.0 > turret_data.range * state.cell_length {
+    // range check
+    let target_creep_item = target_creep_item_option.unwrap();
+    let creep_distance = target_creep_item.0;
+    let target_creep_item = target_creep_item.1;
+
+    if creep_distance > turret_data.range * state.cell_length {
         return;
     }
 
-    let target_creep_item = target_creep_item.1;
+    // rotate towards target
     let target_creep = target_creep_item.data;
 
     let dx = target_creep.pos.x - turret.general_data.pos.x as f32 * state.cell_length;
     let dy = target_creep.pos.y - turret.general_data.pos.y as f32 * state.cell_length;
 
     specific.rotation = dy.atan2(dx);
+
+    // if can shoot, shoot
     if state.tick > turret.general_data.last_shot + 60 {
         turret.general_data.last_shot = state.tick;
         state.particles.add(Particle {
             pos: turret_pos,
             target: target_creep_item.item_ref.clone(),
             damage: turret_data.damage * turret_data.damage_multiplier / 100.0,
+            speed: turret_data.projectile_speed * state.cell_length / 60.0,
         });
     }
 }
@@ -112,7 +122,7 @@ pub fn update_basic_turret(turret: &mut Turret, specific: &mut BasicData, state:
 impl Turret {
     pub fn tick(self: &mut Turret, state: &mut State) {
         match self.specific_data {
-            SpecificData::Basic(mut d) => update_basic_turret(self, &mut d, state),
+            SpecificData::Basic(mut d) => update_basic_tower(self, &mut d, state),
         }
     }
 }
@@ -125,4 +135,5 @@ pub struct Particle {
     // through api seems odd / hard to do in rust?
     pub target: RecycledListRef,
     pub damage: f32,
+    pub speed: f32, // pixel per tick
 }
