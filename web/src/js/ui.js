@@ -1,9 +1,11 @@
 import { Canvas } from "./Canvas.js";
 import { Art } from "./Art.js";
+import { GamePhase } from "../wasm/oxidized_turret_bg.js";
 
-export function createUi({ canvas, health, wave, gold, speed }) {
+export function createUi({ canvas, health, wave, gold, speed, start, global }) {
   const uiCanvas = new Canvas(canvas);
   const uiArt = new Art(uiCanvas);
+
   return {
     drawUi(uiState) {
       uiCanvas.fillRect({
@@ -43,6 +45,13 @@ export function createUi({ canvas, health, wave, gold, speed }) {
       wave.innerText = `Wave: ${uiState.wave}`;
       gold.innerText = `Gold: ${uiState.gold}`;
       speed.innerText = `Speed: ${uiState.animationSpeed}`;
+
+      global.className = "";
+      if (uiState.phase === GamePhase.Building) {
+        global.classList.add("building");
+      } else {
+        global.classList.add("fighting");
+      }
     },
     handleResize({ width, height }) {
       uiCanvas.resize({ width, height });

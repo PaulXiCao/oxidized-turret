@@ -47,6 +47,8 @@ const ui = createUi({
   wave: document.querySelector(".wave"),
   gold: document.querySelector(".gold"),
   speed: document.querySelector(".speed"),
+  start: document.querySelector(".start"),
+  global: document.body,
 });
 
 const gameCanvas = createGameCanvas(document.getElementById("canvas"));
@@ -57,6 +59,8 @@ document.addEventListener("click", (event) => {
     stateHandler.increaseAnimationSpeed();
   } else if (event.target.classList.contains("decrease-speed")) {
     stateHandler.decreaseAnimationSpeed();
+  } else if (event.target.classList.contains("start")) {
+    stateHandler.handleStartButton();
   }
 });
 

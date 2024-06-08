@@ -1,7 +1,7 @@
 use crate::entities::{Creep, Particle};
 use crate::recycled_list::RecycledListRef;
 use crate::utils::{to_float_position, FloatPosition};
-use crate::{SpecificData, State, Turret};
+use crate::{GamePhase, SpecificData, State, Turret};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -52,4 +52,5 @@ pub struct ExternalState {
     pub game_result: GameResult,
     pub current_level: u32,
     pub gold: u32,
+    pub phase: GamePhase,
 }

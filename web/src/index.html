@@ -79,6 +79,23 @@
         border: 1px solid black;
         cursor: pointer;
       }
+
+      .start {
+        position: absolute;
+        font-size: 2rem;
+        bottom: 1em;
+        left: 2em;
+        padding: 0.5em;
+        cursor: pointer;
+      }
+
+      body.fighting .start {
+        background-color: gray;
+      }
+
+      body.building .start {
+        background-color: green;
+      }
     </style>
   </head>
   <body>
@@ -93,6 +110,8 @@
         <div class="increase-speed">+</div>
         <div class="decrease-speed">-</div>
       </div>
+
+      <div class="start">Start</div>
     </div>
 
     <script src="./js/main.js" type="module" defer></script>

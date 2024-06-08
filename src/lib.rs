@@ -124,6 +124,7 @@ impl Game {
             game_result,
             current_level: state.current_level,
             gold: state.gold,
+            phase: state.game_phase.clone(),
         }
     }
 
@@ -133,7 +134,8 @@ impl Game {
             _ => (),
         }
 
-        if self.state.gold == 0 {
+        // TODO: check build cost of selected tower
+        if self.state.gold < BASIC[0].cost {
             return;
         }
 
@@ -197,20 +199,21 @@ impl Game {
         }
     }
 
+    pub fn start_wave(&mut self) {
+        match self.state.game_phase {
+            GamePhase::Building => {
+                self.state.game_phase = GamePhase::Fighting;
+            }
+            _ => (),
+        }
+    }
+
     pub fn update_state(&mut self) {
         if !self.state.still_running {
             return;
         }
-
         match self.state.game_phase {
-            GamePhase::Building => {
-                // todo: let player finish building phase without spending all gold
-                if self.state.gold < 50 {
-                    self.state.game_phase = GamePhase::Fighting;
-                } else {
-                    return;
-                }
-            }
+            GamePhase::Building => return,
             _ => (),
         }
 
@@ -319,7 +322,8 @@ impl Game {
 }
 
 #[derive(Clone)]
-enum GamePhase {
+#[wasm_bindgen]
+pub enum GamePhase {
     Building,
     Fighting,
 }

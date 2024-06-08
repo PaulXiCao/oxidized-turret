@@ -18,7 +18,7 @@ import * as wasm from "../wasm/oxidized_turret_bg.js";
 export function createStateHandler({ gameEngine, gameCanvas, ui }) {
   const uiState = new Proxy(
     {
-      state: "initial",
+      state: wasm.GamePhase.Building,
       selectedTurret: null,
       health: 20,
       wave: 1,
@@ -82,19 +82,19 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       uiState.health = gameState.health;
       uiState.gold = gameState.gold;
       uiState.wave = gameState.current_level;
+      uiState.phase = gameState.phase;
 
       gameCanvas.drawState(gameState, time);
-
-      //   if (uiState.selectedTurret === 0 && mouseX > 50) {
-      //     gameCanvas.indicateTurret(gameState, { x: mouseX, y: mouseY });
-      //   }
     },
 
     increaseAnimationSpeed() {
       uiState.animationSpeed = Math.min(uiState.animationSpeed + 1, 100);
     },
     decreaseAnimationSpeed() {
-      uiState.animationSpeed = Math.max(uiState.animationSpeed - 1, 1);
+      uiState.animationSpeed = Math.max(uiState.animationSpeed - 1, 0);
+    },
+    handleStartButton() {
+      gameEngine.start_wave();
     },
   };
 }
