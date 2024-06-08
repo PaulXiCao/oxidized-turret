@@ -79,12 +79,13 @@ wasm-pack build --out-dir web/src/wasm
 - [x] fullscreen + resize
 - [x] Simple Tower Building UI
 - [x] display path of creeps
-- [ ] display score, health, current level, and game resolution (who won)
+- [x] display score, health, current level, and game resolution (who won)
 - [ ] display tower range on click
 - [ ] higher frame rates than 60 FPS
 - [ ] support mobile devices (drag, pinch zoom, ...)
 - [ ] remove towers
 - [x] intermediate goals: implementing multiple intermediate goals broke path offsetting (into cell center) and (intermediate) goal(s) are not shown anymore
+- [ ] highscore list (+ database?)
 
 ### Other
 
