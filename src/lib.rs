@@ -128,14 +128,20 @@ impl Game {
         }
     }
 
-    pub fn build_tower(&mut self, x: f32, y: f32) {
+    // fixme: create enum for kind instead of error-prone i32
+    pub fn build_tower(&mut self, x: f32, y: f32, kind: i32) {
         match self.state.game_phase {
             GamePhase::Fighting => return,
             _ => (),
         }
 
-        // TODO: check build cost of selected tower
-        if self.state.gold < BASIC[0].cost {
+        let tower_data = match kind {
+            0 => BASIC[0],
+            1 => SNIPER[0],
+            _ => panic!("gotcha! tower kind not implemented!"),
+        };
+
+        if self.state.gold < tower_data.cost {
             return;
         }
 
@@ -164,10 +170,17 @@ impl Game {
                 last_shot: self.state.tick,
                 level: 0,
             },
-            specific_data: SpecificData::Basic(BasicData {
-                rotation: 0.0,
-                target: RecycledListRef::null_ref(),
-            }),
+            specific_data: match kind {
+                0 => SpecificData::Basic(BasicData {
+                    rotation: 0.0,
+                    target: RecycledListRef::null_ref(),
+                }),
+                1 => SpecificData::Sniper(BasicData {
+                    rotation: 0.0,
+                    target: RecycledListRef::null_ref(),
+                }),
+                _ => panic!("gotcha! tower kind not implemented!"),
+            },
         });
 
         match compute_creep_paths(self) {
@@ -188,12 +201,7 @@ impl Game {
         match value {
             None => None,
             Some(x) => Some(TurretRef {
-                turret: ExternalTurret {
-                    pos: to_float_position(x.data.general_data.pos, self.state.cell_length),
-                    rotation: match &x.data.specific_data {
-                        SpecificData::Basic(d) => d.rotation,
-                    },
-                },
+                turret: to_external_turret(&x.data, &self.state),
                 turret_ref: x.item_ref.clone(),
             }),
         }

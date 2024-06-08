@@ -2,6 +2,56 @@ import { Canvas } from "./Canvas.js";
 import { Art } from "./Art.js";
 import { GamePhase, GameResult } from "../wasm/oxidized_turret_bg.js";
 
+function drawBasicTurret(uiCanvas, uiArt, uiState) {
+  // draw background
+  uiCanvas.fillRect({
+    x: 0,
+    y: 0,
+    width: 50,
+    height: uiCanvas.getSize().height,
+    color: "#222222",
+  });
+
+  // draw selection
+  if (uiState.selectedTurret === 0) {
+    uiCanvas.fillRect({
+      x: 0,
+      y: 0,
+      width: 50,
+      height: 50,
+      color: "green",
+    });
+  }
+
+  // draw icon
+  uiArt.drawTurret({ pos: { x: 10, y: 10 }, rotation: 0, kind: 0 }, 30);
+}
+
+function drawSniperTurret(uiCanvas, uiArt, uiState) {
+  // draw background
+  uiCanvas.fillRect({
+    x: 0,
+    y: 50,
+    width: 50,
+    height: uiCanvas.getSize().height,
+    color: "#222222",
+  });
+
+  // draw selection
+  if (uiState.selectedTurret === 1) {
+    uiCanvas.fillRect({
+      x: 0,
+      y: 50,
+      width: 50,
+      height: 50,
+      color: "green",
+    });
+  }
+
+  // draw icon
+  uiArt.drawTurret({ pos: { x: 10, y: 60 }, rotation: 10, kind: 1 }, 30);
+}
+
 export function createUi({
   canvas,
   health,
@@ -16,30 +66,9 @@ export function createUi({
 
   return {
     drawUi(uiState) {
-      uiCanvas.fillRect({
-        x: 0,
-        y: 0,
-        width: 50,
-        height: uiCanvas.getSize().height,
-        color: "#222222",
-      });
-      if (uiState.selectedTurret === 0) {
-        uiCanvas.fillRect({
-          x: 0,
-          y: 0,
-          width: 50,
-          height: 50,
-          color: "green",
-        });
-      }
-      uiCanvas.fillRect({
-        x: 5,
-        y: 5,
-        width: 40,
-        height: 40,
-        color: "black",
-      });
-      uiArt.drawTurret({ pos: { x: 10, y: 10 }, rotation: 0 }, 30);
+      drawBasicTurret(uiCanvas, uiArt, uiState);
+      drawSniperTurret(uiCanvas, uiArt, uiState);
+
       uiCanvas.fillCircle({ x: 10, y: 40, r: 7, color: "gray" });
       uiCanvas.fillText({
         x: 7,

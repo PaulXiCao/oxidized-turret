@@ -9,6 +9,7 @@ use wasm_bindgen::prelude::*;
 pub struct ExternalTurret {
     pub pos: FloatPosition,
     pub rotation: f32, // orientation/angle in RAD
+    pub kind: i32,
 }
 
 pub fn to_external_turret(turret: &Turret, state: &State) -> ExternalTurret {
@@ -16,6 +17,11 @@ pub fn to_external_turret(turret: &Turret, state: &State) -> ExternalTurret {
         pos: to_float_position(turret.general_data.pos, state.cell_length),
         rotation: match &turret.specific_data {
             SpecificData::Basic(d) => d.rotation,
+            SpecificData::Sniper(d) => d.rotation,
+        },
+        kind: match &turret.specific_data {
+            SpecificData::Basic(_) => 0,
+            SpecificData::Sniper(_) => 1,
         },
     }
 }

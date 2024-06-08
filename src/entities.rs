@@ -47,6 +47,17 @@ pub const BASIC: [Basic; 1] = [Basic {
     cost: 50,
 }];
 
+// fixme: insert correct sniper data
+pub const SNIPER: [Basic; 1] = [Basic {
+    range: 2.0,
+    damage: 7.5,
+    attack_speed: 1.25,
+    rotation_speed: 90.0,
+    projectile_speed: 2.8,
+    damage_multiplier: 100.0,
+    cost: 10,
+}];
+
 #[derive(Copy, Clone)]
 pub struct BasicData {
     pub rotation: f32, // orientation/angle in RAD
@@ -56,6 +67,7 @@ pub struct BasicData {
 #[derive(Copy, Clone)]
 pub enum SpecificData {
     Basic(BasicData),
+    Sniper(BasicData), // fixme: create SniperData and use here
 }
 
 #[derive(Copy, Clone)]
@@ -159,6 +171,9 @@ impl Turret {
         match specific_data {
             SpecificData::Basic(specific_data) => {
                 update_basic_tower(general_data, specific_data, state)
+            }
+            SpecificData::Sniper(specific_data) => {
+                update_basic_tower(general_data, specific_data, state) // fixme: implement update_sniper_tower
             }
         }
     }

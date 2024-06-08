@@ -21,12 +21,16 @@ export class Art {
   drawTurret(turret, turretSize) {
     const x = turret.pos.x;
     const y = turret.pos.y;
+
+    let turretColor = "white";
+    if (turret.kind === 1) turretColor = "red";
+
     this.canvas.strokeRect({
       x,
       y,
       width: turretSize,
       height: turretSize,
-      color: "white",
+      color: turretColor,
     });
 
     const cannonLength = turretSize / 2;

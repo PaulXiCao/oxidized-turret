@@ -42,17 +42,32 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
 
   return {
     handleClick(clickPos) {
-      if (clickPos.x <= 50 && clickPos.y < 50) {
-        if (uiState.selectedTurret === null) {
-          uiState.selectedTurret = 0;
-        } else {
-          uiState.selectedTurret = null;
+      if (clickPos.x <= 50) {
+        // We are selecting a turret
+        let new_turret = null;
+        if (clickPos.y < 50) {
+          new_turret = 0;
+        } else if (clickPos.y < 100) {
+          new_turret = 1;
+        }
+
+        if (new_turret !== null) {
+          if (uiState.selectedTurret === new_turret) {
+            // delesect turret
+            uiState.selectedTurret = null;
+          } else {
+            uiState.selectedTurret = new_turret;
+          }
         }
       }
 
       if (clickPos.x > 50 && uiState.selectedTurret !== null) {
         const canvasPos = gameCanvas.realToCanvas(clickPos);
-        gameEngine.build_tower(canvasPos.x, canvasPos.y);
+        gameEngine.build_tower(
+          canvasPos.x,
+          canvasPos.y,
+          uiState.selectedTurret
+        );
       }
 
       return false;
