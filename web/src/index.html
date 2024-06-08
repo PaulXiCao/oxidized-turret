@@ -62,13 +62,6 @@
         padding: 0.5em;
       }
 
-      .speed-controls {
-        position: absolute;
-        right: 1em;
-        background-color: gray;
-        padding: 0.5em;
-      }
-
       .speed-controls div {
         display: inline;
         padding: 0.5em;
@@ -83,10 +76,18 @@
       .start {
         position: absolute;
         font-size: 2rem;
-        bottom: 1em;
+        bottom: 10px;
         left: 2em;
         padding: 0.5em;
         cursor: pointer;
+      }
+
+      .speed-controls {
+        position: absolute;
+        bottom: 10px;
+        left: 12em;
+        background-color: gray;
+        padding: 0.5em;
       }
 
       body.fighting .start {
@@ -95,6 +96,23 @@
 
       body.building .start {
         background-color: green;
+      }
+
+      .result {
+        position: absolute;
+        display: none;
+        font-size: 3rem;
+        top: 40%;
+        left: 10%;
+        padding: 0.5em;
+      }
+
+      .result.won {
+        background-color: green;
+      }
+
+      .result.lost {
+        background-color: red;
       }
     </style>
   </head>
@@ -110,6 +128,8 @@
         <div class="increase-speed">+</div>
         <div class="decrease-speed">-</div>
       </div>
+
+      <div class="result">You've won at wave 10!</div>
 
       <div class="start">Start</div>
     </div>

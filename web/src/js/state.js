@@ -18,7 +18,8 @@ import * as wasm from "../wasm/oxidized_turret_bg.js";
 export function createStateHandler({ gameEngine, gameCanvas, ui }) {
   const uiState = new Proxy(
     {
-      state: wasm.GamePhase.Building,
+      phase: wasm.GamePhase.Building,
+      result: wasm.GameResult.StillRunning,
       selectedTurret: null,
       health: 20,
       wave: 1,
@@ -83,6 +84,7 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       uiState.gold = gameState.gold;
       uiState.wave = gameState.current_level;
       uiState.phase = gameState.phase;
+      uiState.result = gameState.game_result;
 
       gameCanvas.drawState(gameState, time);
     },

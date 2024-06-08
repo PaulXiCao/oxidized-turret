@@ -1,8 +1,16 @@
 import { Canvas } from "./Canvas.js";
 import { Art } from "./Art.js";
-import { GamePhase } from "../wasm/oxidized_turret_bg.js";
+import { GamePhase, GameResult } from "../wasm/oxidized_turret_bg.js";
 
-export function createUi({ canvas, health, wave, gold, speed, start, global }) {
+export function createUi({
+  canvas,
+  health,
+  wave,
+  gold,
+  speed,
+  global,
+  result,
+}) {
   const uiCanvas = new Canvas(canvas);
   const uiArt = new Art(uiCanvas);
 
@@ -51,6 +59,25 @@ export function createUi({ canvas, health, wave, gold, speed, start, global }) {
         global.classList.add("building");
       } else {
         global.classList.add("fighting");
+      }
+
+      switch (uiState.result) {
+        case GameResult.PlayerWon: {
+          result.style.display = "block";
+          result.classList.add("won");
+          result.innerText = `You won with ${uiState.health} hp!`;
+          break;
+        }
+        case GameResult.CreepsWon: {
+          result.style.display = "block";
+          result.classList.add("lost");
+          result.innerText = `You lost at level ${uiState.wave}!`;
+          break;
+        }
+        case GameResult.StillRunning: {
+          result.style.display = "none";
+          break;
+        }
       }
     },
     handleResize({ width, height }) {

@@ -47,8 +47,8 @@ const ui = createUi({
   wave: document.querySelector(".wave"),
   gold: document.querySelector(".gold"),
   speed: document.querySelector(".speed"),
-  start: document.querySelector(".start"),
   global: document.body,
+  result: document.querySelector(".result"),
 });
 
 const gameCanvas = createGameCanvas(document.getElementById("canvas"));

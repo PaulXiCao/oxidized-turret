@@ -22,13 +22,6 @@ export function createGameCanvas(htmlCanvas) {
      * @param {ExternalState} state
      */
     drawState(state, time) {
-      switch (state.game_result) {
-        case GameResult.PlayerWon:
-          alert("You won with " + state.health + " hp!");
-        case GameResult.CreepsWon:
-          alert("You lost at level " + state.current_level);
-        default:;
-      }
       gameArt.clear();
       gameArt.drawMap(state, time);
 
