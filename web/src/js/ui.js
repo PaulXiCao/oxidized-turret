@@ -1,7 +1,7 @@
 import { Canvas } from "./Canvas.js";
 import { Art } from "./Art.js";
 
-export function createUi(canvas) {
+export function createUi({ canvas, health, wave, gold }) {
   const uiCanvas = new Canvas(canvas);
   const uiArt = new Art(uiCanvas);
   return {
@@ -38,6 +38,10 @@ export function createUi(canvas) {
         text: "1",
         color: "black",
       });
+
+      health.innerText = `Health: ${uiState.health}`;
+      wave.innerText = `Wave: ${uiState.wave}`;
+      gold.innerText = `Gold: ${uiState.gold}`;
     },
     handleResize({ width, height }) {
       uiCanvas.resize({ width, height });

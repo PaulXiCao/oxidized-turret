@@ -9,11 +9,20 @@
  * However, this file should NOT depend on any browser events. This improves testability.
  */
 
+import * as wasm from "../wasm/oxidized_turret_bg.js";
+
+/**
+ * @param {object} options
+ * @param {wasm.Game} options.gameEngine
+ */
 export function createStateHandler({ gameEngine, gameCanvas, ui }) {
   const uiState = new Proxy(
     {
       state: "initial",
       selectedTurret: null,
+      health: 20,
+      wave: 1,
+      gold: 200,
     },
     {
       set(target, propertyKey, value, receiver) {
@@ -68,6 +77,10 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       gameEngine.update_state();
 
       const gameState = gameEngine.get_state();
+      uiState.health = gameState.health;
+      uiState.gold = gameState.gold;
+      uiState.wave = gameState.current_level;
+
       gameCanvas.drawState(gameState, time);
 
       //   if (uiState.selectedTurret === 0 && mouseX > 50) {

@@ -41,7 +41,13 @@ window.addEventListener(
 );
 
 const gameEngine = wasm.Game.new();
-const ui = createUi(document.getElementById("ui"));
+const ui = createUi({
+  canvas: document.getElementById("ui-canvas"),
+  health: document.querySelector(".health"),
+  wave: document.querySelector(".wave"),
+  gold: document.querySelector(".gold"),
+});
+
 const gameCanvas = createGameCanvas(document.getElementById("canvas"));
 const stateHandler = createStateHandler({ gameEngine, gameCanvas, ui });
 

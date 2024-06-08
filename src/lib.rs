@@ -123,6 +123,7 @@ impl Game {
             health: state.health,
             game_result,
             current_level: state.current_level,
+            gold: state.gold,
         }
     }
 

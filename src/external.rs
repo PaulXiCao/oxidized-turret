@@ -51,4 +51,5 @@ pub struct ExternalState {
     pub health: u32,
     pub game_result: GameResult,
     pub current_level: u32,
+    pub gold: u32,
 }
