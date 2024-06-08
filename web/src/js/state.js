@@ -28,6 +28,11 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
     },
     {
       set(target, propertyKey, value, receiver) {
+        const prevValue = Reflect.get(target, propertyKey, receiver);
+        if (prevValue === value) {
+          return true;
+        }
+
         const result = Reflect.set(target, propertyKey, value, receiver);
         ui.drawUi(uiState);
         return result;
