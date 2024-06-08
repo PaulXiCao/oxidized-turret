@@ -51,13 +51,26 @@ wasm-pack build --out-dir web/src/wasm
 - [x] you loose health if creep reaches target
 - [x] you win if all creeps of a level are dead
 - [x] game phases (build, animation)
-- [x] build towers
 - [ ] multiplayer (hard!)
 - [ ] tech tree
 - [x] creeps have multiple intermediate goals
 - [ ] creep types, e.g. speed, health, flying, hero (not effected by spells - good idea: spells), splitting (e.g. https://infinitode-2.fandom.com/wiki/Enemies)
 - [x] ingame currency
-- [ ] turret types, e.g. splash, sniper, freeze, aoe, poison, anti-air (e.g. https://infinitode-2.fandom.com/wiki/Towers)
+- [ ] turret
+  - [x] building
+  - [ ] types
+    - [x] basic
+    - [x] sniper
+    - [ ] sniper crit (shared, deterministic random function with seed)
+    - [ ] splash
+    - [ ] freeze
+    - [ ] aoe
+    - [ ] ... see https://infinitode-2.fandom.com/wiki/Towers
+  - [ ] targeting strategy
+  - [ ] research
+  - [ ] experience
+  - [ ] upgrade
+  - [ ] sell
 
 ### js frontend
 

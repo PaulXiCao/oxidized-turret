@@ -135,13 +135,13 @@ impl Game {
             _ => (),
         }
 
-        let tower_data = match kind {
-            0 => BASIC[0],
-            1 => SNIPER[0],
+        let cost = match kind {
+            0 => BASIC[0].cost,
+            1 => SNIPER[0].cost,
             _ => panic!("gotcha! tower kind not implemented!"),
         };
 
-        if self.state.gold < tower_data.cost {
+        if self.state.gold < cost {
             return;
         }
 
@@ -171,13 +171,14 @@ impl Game {
                 level: 0,
             },
             specific_data: match kind {
-                0 => SpecificData::Basic(BasicData {
+                0 => SpecificData::Basic(DynamicBasicData {
                     rotation: 0.0,
                     target: RecycledListRef::null_ref(),
                 }),
-                1 => SpecificData::Sniper(BasicData {
+                1 => SpecificData::Sniper(DynamicSniperData {
                     rotation: 0.0,
                     target: RecycledListRef::null_ref(),
+                    aiming_ticks: 0,
                 }),
                 _ => panic!("gotcha! tower kind not implemented!"),
             },
@@ -186,7 +187,7 @@ impl Game {
         match compute_creep_paths(self) {
             Some(p) => {
                 self.state.creep_path = p;
-                self.state.gold -= BASIC[0].cost; // TODO: other towers
+                self.state.gold -= cost;
             }
             _ => self.turret_state.remove(tower_ref),
         }
