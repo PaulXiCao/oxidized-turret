@@ -46,10 +46,19 @@ const ui = createUi({
   health: document.querySelector(".health"),
   wave: document.querySelector(".wave"),
   gold: document.querySelector(".gold"),
+  speed: document.querySelector(".speed"),
 });
 
 const gameCanvas = createGameCanvas(document.getElementById("canvas"));
 const stateHandler = createStateHandler({ gameEngine, gameCanvas, ui });
+
+document.addEventListener("click", (event) => {
+  if (event.target.classList.contains("increase-speed")) {
+    stateHandler.increaseAnimationSpeed();
+  } else if (event.target.classList.contains("decrease-speed")) {
+    stateHandler.decreaseAnimationSpeed();
+  }
+});
 
 let lastPointerDown = null;
 let isDragging = false;

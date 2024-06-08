@@ -61,6 +61,24 @@
         background-color: gray;
         padding: 0.5em;
       }
+
+      .speed-controls {
+        position: absolute;
+        right: 1em;
+        background-color: gray;
+        padding: 0.5em;
+      }
+
+      .speed-controls div {
+        display: inline;
+        padding: 0.5em;
+      }
+
+      .increase-speed,
+      .decrease-speed {
+        border: 1px solid black;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -70,6 +88,11 @@
       <div class="health">Health: 20</div>
       <div class="wave">Wave: 1</div>
       <div class="gold">Gold: 200</div>
+      <div class="speed-controls">
+        <div class="speed">Speed: 1</div>
+        <div class="increase-speed">+</div>
+        <div class="decrease-speed">-</div>
+      </div>
     </div>
 
     <script src="./js/main.js" type="module" defer></script>

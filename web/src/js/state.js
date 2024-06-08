@@ -23,6 +23,7 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       health: 20,
       wave: 1,
       gold: 200,
+      animationSpeed: 3,
     },
     {
       set(target, propertyKey, value, receiver) {
@@ -73,8 +74,9 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       }
     },
     handleTimeStep(time) {
-      gameEngine.update_state();
-      gameEngine.update_state();
+      for (let i = 0; i < uiState.animationSpeed; i += 1) {
+        gameEngine.update_state();
+      }
 
       const gameState = gameEngine.get_state();
       uiState.health = gameState.health;
@@ -86,6 +88,13 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       //   if (uiState.selectedTurret === 0 && mouseX > 50) {
       //     gameCanvas.indicateTurret(gameState, { x: mouseX, y: mouseY });
       //   }
+    },
+
+    increaseAnimationSpeed() {
+      uiState.animationSpeed = Math.min(uiState.animationSpeed + 1, 100);
+    },
+    decreaseAnimationSpeed() {
+      uiState.animationSpeed = Math.max(uiState.animationSpeed - 1, 1);
     },
   };
 }
