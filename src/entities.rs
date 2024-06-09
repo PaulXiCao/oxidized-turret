@@ -137,6 +137,7 @@ impl FollowsTarget for DynamicSniperData {
     }
 
     fn set_target(&mut self, target: RecycledListRef) {
+        self.aiming_ticks = 0;
         self.target = target;
     }
 
