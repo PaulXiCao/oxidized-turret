@@ -78,8 +78,9 @@ window.addEventListener("pointerup", function mainMouseupHandler(event) {
   const pos = { x: event.clientX, y: event.clientY };
   if (
     lastPointerDown &&
-    lastPointerDown.x === event.clientX &&
-    lastPointerDown.y === event.clientY
+    Math.abs(lastPointerDown.x - event.clientX) +
+      Math.abs(lastPointerDown.y - event.clientY) <
+      2
   ) {
     stateHandler.handleClick(pos);
   } else if (lastPointerDown) {
