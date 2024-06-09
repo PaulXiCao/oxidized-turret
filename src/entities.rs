@@ -37,7 +37,8 @@ pub struct StaticBasicData {
     pub cost: u32,
 }
 
-pub const BASIC: [StaticBasicData; 2] = [
+pub const BASIC: [StaticBasicData; 11] = [
+    // 0
     StaticBasicData {
         range: 2.0,
         damage: 7.5,
@@ -47,6 +48,7 @@ pub const BASIC: [StaticBasicData; 2] = [
         damage_multiplier: 100.0,
         cost: 50,
     },
+    // 1
     StaticBasicData {
         range: 2.2,
         damage: 9.4,
@@ -55,6 +57,96 @@ pub const BASIC: [StaticBasicData; 2] = [
         projectile_speed: 3.0,
         damage_multiplier: 100.0,
         cost: 20,
+    },
+    // 2
+    StaticBasicData {
+        range: 2.3,
+        damage: 11.8,
+        attack_speed: 1.4,
+        rotation_speed: 110.0,
+        projectile_speed: 3.2,
+        damage_multiplier: 100.0,
+        cost: 26,
+    },
+    // 3
+    StaticBasicData {
+        range: 2.3,
+        damage: 14.5,
+        attack_speed: 1.55,
+        rotation_speed: 120.0,
+        projectile_speed: 3.3,
+        damage_multiplier: 100.0,
+        cost: 42,
+    },
+    // 4
+    StaticBasicData {
+        range: 2.5,
+        damage: 18.0,
+        attack_speed: 1.55,
+        rotation_speed: 120.0,
+        projectile_speed: 3.5,
+        damage_multiplier: 100.0,
+        cost: 61,
+    },
+    // 5
+    StaticBasicData {
+        range: 2.2,
+        damage: 23.0,
+        attack_speed: 1.7,
+        rotation_speed: 135.0,
+        projectile_speed: 3.5,
+        damage_multiplier: 100.0,
+        cost: 90,
+    },
+    // 6
+    StaticBasicData {
+        range: 2.6,
+        damage: 27.0,
+        attack_speed: 1.7,
+        rotation_speed: 145.0,
+        projectile_speed: 3.7,
+        damage_multiplier: 100.0,
+        cost: 150,
+    },
+    // 7
+    StaticBasicData {
+        range: 2.7,
+        damage: 33.5,
+        attack_speed: 1.95,
+        rotation_speed: 145.0,
+        projectile_speed: 3.8,
+        damage_multiplier: 100.0,
+        cost: 250,
+    },
+    // 8
+    StaticBasicData {
+        range: 2.7,
+        damage: 41.0,
+        attack_speed: 2.05,
+        rotation_speed: 170.0,
+        projectile_speed: 3.9,
+        damage_multiplier: 100.0,
+        cost: 420,
+    },
+    // 9
+    StaticBasicData {
+        range: 2.9,
+        damage: 49.0,
+        attack_speed: 2.05,
+        rotation_speed: 180.0,
+        projectile_speed: 4.0,
+        damage_multiplier: 100.0,
+        cost: 690,
+    },
+    // 10
+    StaticBasicData {
+        range: 3.0,
+        damage: 57.0,
+        attack_speed: 2.3,
+        rotation_speed: 180.0,
+        projectile_speed: 4.2,
+        damage_multiplier: 100.0,
+        cost: 1100,
     },
 ];
 
@@ -124,16 +216,129 @@ pub struct StaticSniperData {
     pub cost: u32,
 }
 
-pub const SNIPER: [StaticSniperData; 1] = [StaticSniperData {
-    range: 4.5,
-    damage: 46.0,
-    attack_speed: 0.28,
-    rotation_speed: 50.0,
-    aiming_speed: 90.0,
-    crit_chance: 0.15,
-    crit_multiplier: 1.5,
-    cost: 80,
-}];
+pub const SNIPER: [StaticSniperData; 11] = [
+    // 0
+    StaticSniperData {
+        range: 4.5,
+        damage: 46.0,
+        attack_speed: 0.28,
+        rotation_speed: 50.0,
+        aiming_speed: 90.0,
+        crit_chance: 0.15,
+        crit_multiplier: 1.5,
+        cost: 80,
+    },
+    // 1
+    StaticSniperData {
+        range: 4.9,
+        damage: 64.0,
+        attack_speed: 0.32,
+        rotation_speed: 55.0,
+        aiming_speed: 100.0,
+        crit_chance: 0.15,
+        crit_multiplier: 1.5,
+        cost: 42,
+    },
+    // 2
+    StaticSniperData {
+        range: 5.3,
+        damage: 84.0,
+        attack_speed: 0.38,
+        rotation_speed: 60.0,
+        aiming_speed: 105.0,
+        crit_chance: 0.15,
+        crit_multiplier: 1.5,
+        cost: 72,
+    },
+    // 3
+    StaticSniperData {
+        range: 5.3,
+        damage: 128.0,
+        attack_speed: 0.38,
+        rotation_speed: 64.0,
+        aiming_speed: 110.0,
+        crit_chance: 0.15,
+        crit_multiplier: 1.5,
+        cost: 110,
+    },
+    // 4
+    StaticSniperData {
+        range: 5.7,
+        damage: 180.0,
+        attack_speed: 0.44,
+        rotation_speed: 73.0,
+        aiming_speed: 120.0,
+        crit_chance: 0.15,
+        crit_multiplier: 1.5,
+        cost: 176,
+    },
+    // 5
+    StaticSniperData {
+        range: 6.1,
+        damage: 250.0,
+        attack_speed: 0.5,
+        rotation_speed: 73.0,
+        aiming_speed: 135.0,
+        crit_chance: 0.15,
+        crit_multiplier: 1.5,
+        cost: 380,
+    },
+    // 6
+    StaticSniperData {
+        range: 6.1,
+        damage: 310.0,
+        attack_speed: 0.53,
+        rotation_speed: 81.0,
+        aiming_speed: 135.0,
+        crit_chance: 0.15,
+        crit_multiplier: 1.5,
+        cost: 540,
+    },
+    // 7
+    StaticSniperData {
+        range: 6.5,
+        damage: 430.0,
+        attack_speed: 0.53,
+        rotation_speed: 86.0,
+        aiming_speed: 150.0,
+        crit_chance: 0.15,
+        crit_multiplier: 1.5,
+        cost: 760,
+    },
+    // 8
+    StaticSniperData {
+        range: 6.9,
+        damage: 560.0,
+        attack_speed: 0.58,
+        rotation_speed: 86.0,
+        aiming_speed: 170.0,
+        crit_chance: 0.15,
+        crit_multiplier: 1.5,
+        cost: 1140,
+    },
+    // 9
+    StaticSniperData {
+        range: 7.3,
+        damage: 700.0,
+        attack_speed: 0.62,
+        rotation_speed: 86.0,
+        aiming_speed: 180.0,
+        crit_chance: 0.15,
+        crit_multiplier: 1.5,
+        cost: 1800,
+    },
+    // 10
+    StaticSniperData {
+        range: 7.8,
+        damage: 920.0,
+        attack_speed: 0.65,
+        rotation_speed: 90.0,
+        aiming_speed: 200.0,
+        crit_chance: 0.15,
+        crit_multiplier: 1.5,
+        cost: 3000,
+    },
+];
 
 #[derive(Copy, Clone)]
 pub struct DynamicSniperData {
