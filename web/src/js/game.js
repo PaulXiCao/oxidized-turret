@@ -21,7 +21,7 @@ export function createGameCanvas(htmlCanvas) {
     /**
      * @param {ExternalState} state
      */
-    drawState(state, time) {
+    drawState(state, uiState, time) {
       gameArt.clear();
       gameArt.drawMap(state, time);
 
@@ -33,6 +33,16 @@ export function createGameCanvas(htmlCanvas) {
       }
       for (const particle of state.particles) {
         gameArt.drawParticle(particle);
+      }
+
+      if (uiState.selectedTower) {
+        const tower = uiState.selectedTower.turret;
+        canvas.fillCircle({
+          x: tower.pos.x + state.cell_length / 2,
+          y: tower.pos.y + state.cell_length / 2,
+          r: tower.range,
+          color: "rgba(0,255,0,0.1)",
+        });
       }
     },
     /**

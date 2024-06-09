@@ -21,6 +21,7 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       phase: wasm.GamePhase.Building,
       result: wasm.GameResult.StillRunning,
       selectedTurret: null,
+      selectedTower: undefined,
       health: 20,
       wave: 1,
       gold: 200,
@@ -73,7 +74,7 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       if (clickPos.x > 50 && uiState.selectedTurret === null) {
         const canvasPos = gameCanvas.realToCanvas(clickPos);
         const tower = gameEngine.get_tower_at(canvasPos.x, canvasPos.y);
-        console.log(tower);
+        uiState.selectedTower = tower;
       }
 
       return false;
@@ -112,7 +113,7 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       uiState.phase = gameState.phase;
       uiState.result = gameState.game_result;
 
-      gameCanvas.drawState(gameState, time);
+      gameCanvas.drawState(gameState, uiState, time);
     },
 
     increaseAnimationSpeed() {
