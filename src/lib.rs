@@ -208,6 +208,20 @@ impl Game {
         }
     }
 
+    pub fn sell_tower(&mut self, turret_ref: RecycledListRef) {
+        let tower_option = self.turret_state.get(turret_ref);
+        if tower_option.is_none() {
+            return;
+        }
+
+        let tower = tower_option.unwrap();
+        match tower.specific_data {
+            SpecificData::Basic(_) => self.state.gold += BASIC[0].cost,
+            SpecificData::Sniper(_) => self.state.gold += SNIPER[0].cost,
+        }
+        self.turret_state.remove(turret_ref);
+    }
+
     pub fn start_wave(&mut self) {
         match self.state.game_phase {
             GamePhase::Building => {

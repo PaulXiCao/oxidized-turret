@@ -125,5 +125,16 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
     handleStartButton() {
       gameEngine.start_wave();
     },
+    handleSidebarClose() {
+      uiState.selectedTower = null;
+      uiState.selectedTurret = null;
+    },
+    handleTowerSell() {
+      if (!uiState.selectedTower) {
+        return;
+      }
+      gameEngine.sell_tower(uiState.selectedTower.turret_ref);
+      uiState.selectedTower = null;
+    },
   };
 }

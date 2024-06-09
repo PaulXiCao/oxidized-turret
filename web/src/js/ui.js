@@ -1,6 +1,10 @@
 import { Canvas } from "./Canvas.js";
 import { Art } from "./Art.js";
-import { GamePhase, GameResult } from "../wasm/oxidized_turret_bg.js";
+import {
+  TurretRef,
+  GamePhase,
+  GameResult,
+} from "../wasm/oxidized_turret_bg.js";
 
 function drawBasicTurret(uiCanvas, uiArt, uiState) {
   // draw background
@@ -60,6 +64,8 @@ export function createUi({
   speed,
   global,
   result,
+  towerDetailSidebar,
+  towerStats,
 }) {
   const uiCanvas = new Canvas(canvas);
   const uiArt = new Art(uiCanvas);
@@ -68,6 +74,18 @@ export function createUi({
     drawUi(uiState) {
       drawBasicTurret(uiCanvas, uiArt, uiState);
       drawSniperTurret(uiCanvas, uiArt, uiState);
+
+      if (uiState.selectedTower) {
+        /** @type {TurretRef} */
+        const turret = uiState.selectedTower;
+        towerDetailSidebar.style.display = "block";
+        towerStats.innerHTML = `
+          <div>Selected Tower: ${turret.turret_ref.id}</div>
+          <div>Range: ${turret.turret.range}</div>
+        `;
+      } else {
+        towerDetailSidebar.style.display = "none";
+      }
 
       uiCanvas.fillCircle({ x: 10, y: 40, r: 7, color: "gray" });
       uiCanvas.fillText({

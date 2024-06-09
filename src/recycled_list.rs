@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
 pub struct RecycledListRef {
-    id: u32,
+    pub id: u32,
     index: usize,
 }
 
@@ -118,7 +118,8 @@ impl<T> RecycledList<T> {
         }
         let mut items_to_remove: Vec<RecycledListRef> = vec![];
         items_to_remove.reserve(self.items.len() - self.free_list.len());
-        self.enumerate().for_each(|x| items_to_remove.push(x.item_ref));
+        self.enumerate()
+            .for_each(|x| items_to_remove.push(x.item_ref));
         items_to_remove.iter().for_each(|x| self.remove(*x));
     }
 

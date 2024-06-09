@@ -50,6 +50,8 @@ const ui = createUi({
   speed: document.querySelector(".speed"),
   global: document.body,
   result: document.querySelector(".result"),
+  towerDetailSidebar: document.querySelector(".tower-detail-sidebar"),
+  towerStats: document.querySelector(".tower-stats"),
 });
 
 const gameCanvas = createGameCanvas(document.getElementById("canvas"));
@@ -64,6 +66,12 @@ document.addEventListener("click", (event) => {
     stateHandler.handleStartButton();
   } else if (event.target.classList.contains("turret")) {
     console.log(event.target.dataset.type);
+  } else if (event.target.classList.contains("tower-upgrade")) {
+    console.log("upgrade tower");
+  } else if (event.target.classList.contains("tower-sell")) {
+    stateHandler.handleTowerSell();
+  } else if (event.target.classList.contains("close")) {
+    stateHandler.handleSidebarClose();
   }
 });
 

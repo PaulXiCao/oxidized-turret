@@ -189,6 +189,41 @@
         margin-left: 0.5em;
         margin-top: 1em;
       }
+
+      .tower-detail-sidebar {
+        z-index: 2;
+        position: absolute;
+        width: 300px;
+        height: 100vh;
+        background-color: gray;
+        top: 0px;
+        right: 0px;
+      }
+
+      .tower-stats {
+        margin-left: 1em;
+      }
+
+      .tower-detail-buttons {
+        margin-top: 1em;
+        margin-left: 1em;
+      }
+
+      .tower-upgrade {
+        display: inline-block;
+        font-size: 1.5rem;
+        background-color: hsl(244, 60%, 45%);
+        padding: 0.3em 1em;
+        cursor: pointer;
+      }
+
+      .tower-sell {
+        display: inline-block;
+        font-size: 1.5rem;
+        background-color: hsl(0, 60%, 45%);
+        padding: 0.3em 1em;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -269,6 +304,15 @@
           </div>
         </div>
         <div class="message">Click again to buy.</div>
+      </div>
+
+      <div class="tower-detail-sidebar">
+        <div class="close">></div>
+        <div class="tower-stats"></div>
+        <div class="tower-detail-buttons">
+          <div class="tower-upgrade">Upgrade</div>
+          <div class="tower-sell">Sell</div>
+        </div>
       </div>
     </div>
 
