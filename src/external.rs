@@ -55,6 +55,11 @@ impl HasStats for DynamicBasicData {
                 value: BASIC[level as usize].attack_speed,
                 unit: String::from("/s"),
             },
+            Stat {
+                key: String::from("Range"),
+                value: BASIC[level as usize].range,
+                unit: String::from("tiles"),
+            },
         ]
     }
 }
@@ -75,6 +80,11 @@ impl HasStats for DynamicSniperData {
                 key: String::from("Attack Speed"),
                 value: SNIPER[level as usize].attack_speed,
                 unit: String::from("/s"),
+            },
+            Stat {
+                key: String::from("Range"),
+                value: SNIPER[level as usize].range,
+                unit: String::from("tiles"),
             },
         ]
     }

@@ -43,6 +43,20 @@ export function createGameCanvas(htmlCanvas) {
           r: tower.range,
           color: "rgba(0,255,0,0.1)",
         });
+
+        if (uiState.upgrading) {
+          const nextRange = uiState.selectedTower.data.next_stats.find(
+            (stat) => stat.key === "Range"
+          )?.value;
+          if (nextRange) {
+            canvas.fillCircle({
+              x: tower.pos.x + state.cell_length / 2,
+              y: tower.pos.y + state.cell_length / 2,
+              r: nextRange * state.cell_length,
+              color: "rgba(0,255,0,0.1)",
+            });
+          }
+        }
       }
     },
     /**
