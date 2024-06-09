@@ -36,7 +36,7 @@ export function createGameCanvas(htmlCanvas) {
       }
 
       if (uiState.selectedTower) {
-        const tower = uiState.selectedTower.turret;
+        const tower = uiState.selectedTower.data.turret;
         canvas.fillCircle({
           x: tower.pos.x + state.cell_length / 2,
           y: tower.pos.y + state.cell_length / 2,

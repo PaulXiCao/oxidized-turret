@@ -5,7 +5,10 @@ mod recycled_list;
 mod utils;
 
 use entities::*;
-use external::{to_external_turret, ExternalState, ExternalTurret, GameResult, TurretRef};
+use external::{
+    to_external_turret, to_external_turret_with_stats, ExternalState, ExternalTurret, GameResult,
+    TurretRef,
+};
 use path::find_path;
 use recycled_list::{RecycledList, RecycledListRef};
 use utils::{
@@ -202,9 +205,19 @@ impl Game {
         match value {
             None => None,
             Some(x) => Some(TurretRef {
-                turret: to_external_turret(&x.data, &self.state),
+                data: to_external_turret_with_stats(&x.data, &self.state),
                 turret_ref: x.item_ref.clone(),
             }),
+        }
+    }
+
+    pub fn get_tower_by_ref(&self, turret_ref: RecycledListRef) -> Option<TurretRef> {
+        match self.turret_state.get(turret_ref) {
+            Some(turret) => Some(TurretRef {
+                data: to_external_turret_with_stats(turret, &self.state),
+                turret_ref,
+            }),
+            None => None,
         }
     }
 
@@ -220,6 +233,35 @@ impl Game {
             SpecificData::Sniper(_) => self.state.gold += SNIPER[0].cost,
         }
         self.turret_state.remove(turret_ref);
+    }
+
+    pub fn upgrade_tower(&mut self, turret_ref: RecycledListRef) {
+        let tower_option = self.turret_state.get_mut(turret_ref);
+        if tower_option.is_none() {
+            return;
+        }
+
+        let tower = tower_option.unwrap();
+        let max_level = match tower.specific_data {
+            SpecificData::Basic(_) => BASIC.len(),
+            SpecificData::Sniper(_) => SNIPER.len(),
+        };
+        let next_level = (tower.general_data.level + 1) as usize;
+        if next_level >= max_level {
+            return;
+        }
+
+        let cost = match tower.specific_data {
+            SpecificData::Basic(_) => BASIC[next_level].cost,
+            SpecificData::Sniper(_) => SNIPER[next_level].cost,
+        };
+
+        if self.state.gold < cost {
+            return;
+        }
+
+        self.state.gold -= cost;
+        tower.general_data.level += 1;
     }
 
     pub fn start_wave(&mut self) {

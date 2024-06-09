@@ -56,6 +56,10 @@ function drawSniperTurret(uiCanvas, uiArt, uiState) {
   uiArt.drawTurret({ pos: { x: 10, y: 60 }, rotation: 10, kind: 1 }, 30);
 }
 
+function round(num) {
+  return Math.round(num * 10) / 10;
+}
+
 export function createUi({
   canvas,
   health,
@@ -66,6 +70,7 @@ export function createUi({
   result,
   towerDetailSidebar,
   towerStats,
+  towerUpgradeButton,
 }) {
   const uiCanvas = new Canvas(canvas);
   const uiArt = new Art(uiCanvas);
@@ -79,9 +84,53 @@ export function createUi({
         /** @type {TurretRef} */
         const turret = uiState.selectedTower;
         towerDetailSidebar.style.display = "block";
+
+        if (turret.data.stats.length === turret.data.next_stats.length) {
+          towerUpgradeButton.style.display = "inline-block";
+        } else {
+          towerUpgradeButton.style.display = "none";
+        }
+
+        if (uiState.upgrading) {
+          towerUpgradeButton.innerText = "Buy Upgrade!";
+        } else {
+          towerUpgradeButton.innerText = "Upgrade?";
+        }
+
+        if (
+          uiState.upgrading &&
+          turret.data.stats.length === turret.data.next_stats.length
+        ) {
+          var towerStatsTable = `
+          <table>
+          <tr><th>Metric</th><th>Now</th><th>Next</th></tr>
+          ${turret.data.stats
+            .map((stat, index) => {
+              const next = turret.data.next_stats[index];
+              return `<tr><td>${stat.key} ${stat.unit}</td><td>${round(
+                stat.value
+              )}</td><td>${round(next.value)}</td></tr>`;
+            })
+            .join("")}
+          </table>`;
+        } else {
+          var towerStatsTable = `
+          <table>
+          <tr><th>Metric</th><th>Value</th></tr>
+          ${turret.data.stats
+            .map(
+              (stat) =>
+                `<tr><td>${stat.key}</td><td>${round(stat.value)} ${
+                  stat.unit
+                }</td></tr>`
+            )
+            .join("")}
+          </table>`;
+        }
+
         towerStats.innerHTML = `
-          <div>Selected Tower: ${turret.turret_ref.id}</div>
-          <div>Range: ${turret.turret.range}</div>
+          <div>Selected Tower (id): ${turret.turret_ref.id}</div>
+          ${towerStatsTable}
         `;
       } else {
         towerDetailSidebar.style.display = "none";

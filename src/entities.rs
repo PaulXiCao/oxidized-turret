@@ -37,15 +37,26 @@ pub struct StaticBasicData {
     pub cost: u32,
 }
 
-pub const BASIC: [StaticBasicData; 1] = [StaticBasicData {
-    range: 2.0,
-    damage: 7.5,
-    attack_speed: 1.25,
-    rotation_speed: 90.0,
-    projectile_speed: 2.8,
-    damage_multiplier: 100.0,
-    cost: 50,
-}];
+pub const BASIC: [StaticBasicData; 2] = [
+    StaticBasicData {
+        range: 2.0,
+        damage: 7.5,
+        attack_speed: 1.25,
+        rotation_speed: 90.0,
+        projectile_speed: 2.8,
+        damage_multiplier: 100.0,
+        cost: 50,
+    },
+    StaticBasicData {
+        range: 2.2,
+        damage: 9.4,
+        attack_speed: 1.4,
+        rotation_speed: 90.0,
+        projectile_speed: 3.0,
+        damage_multiplier: 100.0,
+        cost: 20,
+    },
+];
 
 #[derive(Copy, Clone)]
 pub struct DynamicBasicData {

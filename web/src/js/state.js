@@ -22,6 +22,7 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       result: wasm.GameResult.StillRunning,
       selectedTurret: null,
       selectedTower: undefined,
+      upgrading: false,
       health: 20,
       wave: 1,
       gold: 200,
@@ -75,6 +76,7 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
         const canvasPos = gameCanvas.realToCanvas(clickPos);
         const tower = gameEngine.get_tower_at(canvasPos.x, canvasPos.y);
         uiState.selectedTower = tower;
+        uiState.upgrading = false;
       }
 
       return false;
@@ -135,6 +137,22 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       }
       gameEngine.sell_tower(uiState.selectedTower.turret_ref);
       uiState.selectedTower = null;
+    },
+    handleTowerUpgrade() {
+      if (!uiState.selectedTower) {
+        return;
+      }
+
+      // two click upgrading
+      if (uiState.upgrading) {
+        gameEngine.upgrade_tower(uiState.selectedTower.turret_ref);
+        uiState.selectedTower = gameEngine.get_tower_by_ref(
+          uiState.selectedTower.turret_ref
+        );
+        uiState.upgrading = false;
+      } else {
+        uiState.upgrading = true;
+      }
     },
   };
 }

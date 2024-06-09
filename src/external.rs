@@ -1,7 +1,10 @@
 use crate::entities::{Creep, Particle};
 use crate::recycled_list::RecycledListRef;
 use crate::utils::{to_float_position, FloatPosition};
-use crate::{FollowsTarget, GamePhase, SpecificData, State, Turret};
+use crate::{
+    DynamicBasicData, DynamicSniperData, FollowsTarget, GamePhase, SpecificData, State, Turret,
+    BASIC, SNIPER,
+};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -31,10 +34,86 @@ pub fn to_external_turret(turret: &Turret, state: &State) -> ExternalTurret {
     }
 }
 
-#[wasm_bindgen]
+pub trait HasStats {
+    fn stats(&self, level: u32) -> Vec<Stat>;
+}
+
+impl HasStats for DynamicBasicData {
+    fn stats(&self, level: u32) -> Vec<Stat> {
+        if level as usize >= BASIC.len() {
+            return vec![];
+        }
+
+        vec![
+            Stat {
+                key: String::from("Level"),
+                value: (level + 1) as f32,
+                unit: String::from(""),
+            },
+            Stat {
+                key: String::from("Attack Speed"),
+                value: BASIC[level as usize].attack_speed,
+                unit: String::from("/s"),
+            },
+        ]
+    }
+}
+
+impl HasStats for DynamicSniperData {
+    fn stats(&self, level: u32) -> Vec<Stat> {
+        if level as usize >= SNIPER.len() {
+            return vec![];
+        }
+
+        vec![
+            Stat {
+                key: String::from("Level"),
+                value: (level + 1) as f32,
+                unit: String::from(""),
+            },
+            Stat {
+                key: String::from("Attack Speed"),
+                value: SNIPER[level as usize].attack_speed,
+                unit: String::from("/s"),
+            },
+        ]
+    }
+}
+
+pub fn to_external_turret_with_stats(turret: &Turret, state: &State) -> ExternalTurretWithStats {
+    ExternalTurretWithStats {
+        turret: to_external_turret(turret, state),
+        stats: match turret.specific_data {
+            SpecificData::Basic(d) => d.stats(turret.general_data.level),
+            SpecificData::Sniper(d) => d.stats(turret.general_data.level),
+        },
+        next_stats: match turret.specific_data {
+            SpecificData::Basic(d) => d.stats(turret.general_data.level + 1),
+            SpecificData::Sniper(d) => d.stats(turret.general_data.level + 1),
+        },
+    }
+}
+
+#[wasm_bindgen(getter_with_clone)]
+#[derive(Clone)]
+pub struct Stat {
+    pub key: String,
+    pub value: f32,
+    pub unit: String,
+}
+
+#[wasm_bindgen(getter_with_clone)]
+#[derive(Clone)]
+pub struct ExternalTurretWithStats {
+    pub turret: ExternalTurret,
+    pub stats: Vec<Stat>,
+    pub next_stats: Vec<Stat>,
+}
+
+#[wasm_bindgen(getter_with_clone)]
 #[derive(Clone)]
 pub struct TurretRef {
-    pub turret: ExternalTurret,
+    pub data: ExternalTurretWithStats,
     pub turret_ref: RecycledListRef,
 }
 
