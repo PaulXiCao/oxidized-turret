@@ -61,6 +61,8 @@ document.addEventListener("click", (event) => {
     stateHandler.decreaseAnimationSpeed();
   } else if (event.target.classList.contains("start")) {
     stateHandler.handleStartButton();
+  } else if (event.target.classList.contains("turret")) {
+    console.log(event.target.dataset.type);
   }
 });
 

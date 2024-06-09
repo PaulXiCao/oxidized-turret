@@ -4,11 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Oxidized Turret</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
       * {
         padding: 0;
         margin: 0;
         box-sizing: border-box;
+      }
+
+      :root {
+        font-family: "Roboto Condensed", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 400;
+        font-style: normal;
       }
 
       body {
@@ -114,6 +128,68 @@
       .result.lost {
         background-color: red;
       }
+
+      .building-sidebar {
+        display: none;
+        position: absolute;
+        width: 300px;
+        height: 100vh;
+        background-color: gray;
+        top: 0px;
+        right: 0px;
+      }
+
+      .towers {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px 0px;
+        justify-content: space-evenly;
+      }
+
+      .turret {
+        position: relative;
+        display: inline-block;
+
+        width: 80px;
+        height: 80px;
+
+        background-color: black;
+        color: white;
+        cursor: pointer;
+        padding: 10px;
+      }
+
+      .cost {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 25px;
+        height: 25px;
+        padding-top: 5px;
+        text-align: center;
+        color: black;
+        border-radius: 50%;
+        background-color: yellow;
+        font-size: 0.8rem;
+      }
+
+      .close {
+        background-color: rgb(24, 22, 22);
+        font-size: 2rem;
+        color: white;
+        text-align: center;
+        width: 60px;
+        height: 40px;
+        margin-bottom: 10px;
+        margin-left: -10px;
+      }
+
+      .message {
+        display: none;
+        font-size: 1.5rem;
+        margin-left: 0.5em;
+        margin-top: 1em;
+      }
     </style>
   </head>
   <body>
@@ -132,6 +208,69 @@
       <div class="result">You've won at wave 10!</div>
 
       <div class="start">Start</div>
+
+      <div class="building-sidebar">
+        <div class="close">></div>
+        <div class="towers">
+          <div class="turret" data-type="Basic">
+            Basic
+            <div class="cost">50</div>
+          </div>
+          <div class="turret" data-type="Sniper">
+            Sniper
+            <div class="cost">80</div>
+          </div>
+          <div class="turret" data-type="Cannon">
+            Cannon
+            <div class="cost">60</div>
+          </div>
+          <div class="turret" data-type="Freezing">
+            Freezing
+            <div class="cost">80</div>
+          </div>
+          <div class="turret" data-type="Antiair">
+            Antiair
+            <div class="cost">40</div>
+          </div>
+          <div class="turret" data-type="Splash">
+            Splash
+            <div class="cost">80</div>
+          </div>
+          <div class="turret" data-type="Blast">
+            Blast
+            <div class="cost">75</div>
+          </div>
+          <div class="turret" data-type="Multishot">
+            Multishot
+            <div class="cost">90</div>
+          </div>
+          <div class="turret" data-type="Minigun">
+            Minigun
+            <div class="cost">110</div>
+          </div>
+          <div class="turret" data-type="Venom">
+            Venom
+            <div class="cost">100</div>
+          </div>
+          <div class="turret" data-type="Tesla">
+            Tesla
+            <div class="cost">100</div>
+          </div>
+          <div class="turret" data-type="Missile">
+            Missile
+            <div class="cost">150</div>
+          </div>
+          <div class="turret" data-type="Flamethrower">
+            Flame- thrower
+            <div class="cost">110</div>
+          </div>
+          <div class="turret" data-type="Laser">
+            Laser
+            <div class="cost">100</div>
+          </div>
+        </div>
+        <div class="message">Click again to buy.</div>
+      </div>
     </div>
 
     <script src="./js/main.js" type="module" defer></script>
