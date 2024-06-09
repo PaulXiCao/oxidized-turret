@@ -51,14 +51,29 @@ impl HasStats for DynamicBasicData {
                 unit: String::from(""),
             },
             Stat {
-                key: String::from("Attack Speed"),
+                key: String::from("Range"),
+                value: BASIC[level as usize].range,
+                unit: String::from("tiles"),
+            },
+            Stat {
+                key: String::from("Damage"),
+                value: BASIC[level as usize].damage,
+                unit: String::from(""),
+            },
+            Stat {
+                key: String::from("Attack speed"),
                 value: BASIC[level as usize].attack_speed,
                 unit: String::from("/s"),
             },
             Stat {
-                key: String::from("Range"),
-                value: BASIC[level as usize].range,
-                unit: String::from("tiles"),
+                key: String::from("Rotation speed"),
+                value: BASIC[level as usize].rotation_speed,
+                unit: String::from("deg/s"),
+            },
+            Stat {
+                key: String::from("Projectile Speed"),
+                value: BASIC[level as usize].projectile_speed,
+                unit: String::from("tiles/s"),
             },
         ]
     }
@@ -77,14 +92,29 @@ impl HasStats for DynamicSniperData {
                 unit: String::from(""),
             },
             Stat {
+                key: String::from("Range"),
+                value: SNIPER[level as usize].range,
+                unit: String::from("tiles"),
+            },
+            Stat {
+                key: String::from("Damage"),
+                value: SNIPER[level as usize].damage,
+                unit: String::from(""),
+            },
+            Stat {
                 key: String::from("Attack Speed"),
                 value: SNIPER[level as usize].attack_speed,
                 unit: String::from("/s"),
             },
             Stat {
-                key: String::from("Range"),
-                value: SNIPER[level as usize].range,
-                unit: String::from("tiles"),
+                key: String::from("Rotation speed"),
+                value: SNIPER[level as usize].rotation_speed,
+                unit: String::from("deg/s"),
+            },
+            Stat {
+                key: String::from("Aiming speed"),
+                value: SNIPER[level as usize].aiming_speed,
+                unit: String::from("%/s"),
             },
         ]
     }
