@@ -41,6 +41,7 @@ window.addEventListener(
 );
 
 const gameEngine = wasm.Game.new();
+const uiCanvas = document.getElementById("ui-canvas");
 const ui = createUi({
   canvas: document.getElementById("ui-canvas"),
   health: document.querySelector(".health"),
@@ -69,12 +70,12 @@ document.addEventListener("click", (event) => {
 let lastPointerDown = null;
 let isDragging = false;
 
-window.addEventListener("pointerdown", function mainMousedownHandler(event) {
+uiCanvas.addEventListener("pointerdown", function mainMousedownHandler(event) {
   lastPointerDown = { x: event.clientX, y: event.clientY };
   isDragging = false;
 });
 
-window.addEventListener("pointerup", function mainMouseupHandler(event) {
+uiCanvas.addEventListener("pointerup", function mainMouseupHandler(event) {
   const pos = { x: event.clientX, y: event.clientY };
   if (
     lastPointerDown &&
@@ -93,7 +94,7 @@ window.addEventListener("pointerup", function mainMouseupHandler(event) {
 
 let mouseX = 0;
 let mouseY = 0;
-window.addEventListener("pointermove", function currentMousePosition(event) {
+uiCanvas.addEventListener("pointermove", function currentMousePosition(event) {
   mouseX = event.clientX;
   mouseY = event.clientY;
 

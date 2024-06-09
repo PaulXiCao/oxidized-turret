@@ -70,6 +70,12 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
         );
       }
 
+      if (clickPos.x > 50 && uiState.selectedTurret === null) {
+        const canvasPos = gameCanvas.realToCanvas(clickPos);
+        const tower = gameEngine.get_tower_at(canvasPos.x, canvasPos.y);
+        console.log(tower);
+      }
+
       return false;
     },
     handleResize({ width, height }) {

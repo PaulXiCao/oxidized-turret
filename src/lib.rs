@@ -193,7 +193,7 @@ impl Game {
         }
     }
 
-    pub fn get_tower_at(self, x: f32, y: f32) -> Option<TurretRef> {
+    pub fn get_tower_at(&self, x: f32, y: f32) -> Option<TurretRef> {
         let grid_pos = to_grid_position(FloatPosition { x, y }, self.state.cell_length);
         let value = self
             .turret_state
