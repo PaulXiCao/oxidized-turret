@@ -196,7 +196,7 @@ impl FollowsTarget for DynamicBasicData {
             general_data.last_shot = state.tick;
             state.particles.add(Particle {
                 pos: turret_pos,
-                target: self.target.clone(),
+                target: self.target,
                 damage: turret_data.damage * turret_data.damage_multiplier / 100.0,
                 speed: turret_data.projectile_speed * state.cell_length / 60.0,
             });
@@ -204,6 +204,7 @@ impl FollowsTarget for DynamicBasicData {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Copy, Clone)]
 pub struct StaticSniperData {
     pub range: f32, // tiles
@@ -428,7 +429,7 @@ fn find_nearest_creep(
         .map(|creep_item| (distance(creep_item.data.pos, turret_pos), creep_item))
         .filter(|(d, _item_ref)| *d < turret_range)
         .min_by_key(|(d, _item_ref)| (*d * 100.0) as i32)
-        .map_or(None, |x| Some(x.1));
+        .map(|x| x.1);
 }
 
 pub trait FollowsTarget {

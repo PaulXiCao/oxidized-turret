@@ -70,15 +70,13 @@ impl<T> RecycledList<T> {
     }
 
     pub fn remove(&mut self, item_ref: RecycledListRef) {
-        let item = self.items.get_mut(item_ref.index);
-        match item {
-            Some(item) => {
-                if item.item_ref.id == item_ref.id {
-                    item.item_ref.id = 0;
-                    self.free_list.push(item_ref.index);
-                }
+        let opt_item = self.items.get_mut(item_ref.index);
+
+        if let Some(item) = opt_item {
+            if item.item_ref.id == item_ref.id {
+                item.item_ref.id = 0;
+                self.free_list.push(item_ref.index);
             }
-            _ => (),
         }
     }
 
@@ -89,22 +87,16 @@ impl<T> RecycledList<T> {
                 id: self.current_id,
                 index: self.items.len(),
             };
-            self.items.push(RecycledListItem {
-                item_ref: item_ref.clone(),
-                data,
-            });
-            return item_ref;
+            self.items.push(RecycledListItem { item_ref, data });
+            item_ref
         } else {
             let free_index = self.free_list.pop().unwrap();
             let item_ref = RecycledListRef {
                 id: self.current_id,
                 index: free_index,
             };
-            self.items[free_index] = RecycledListItem {
-                item_ref: item_ref.clone(),
-                data,
-            };
-            return item_ref;
+            self.items[free_index] = RecycledListItem { item_ref, data };
+            item_ref
         }
     }
 
@@ -116,8 +108,8 @@ impl<T> RecycledList<T> {
         if self.is_empty() {
             return;
         }
-        let mut items_to_remove: Vec<RecycledListRef> = vec![];
-        items_to_remove.reserve(self.items.len() - self.free_list.len());
+        let mut items_to_remove: Vec<RecycledListRef> =
+            Vec::with_capacity(self.items.len() - self.free_list.len());
         self.enumerate()
             .for_each(|x| items_to_remove.push(x.item_ref));
         items_to_remove.iter().for_each(|x| self.remove(*x));
@@ -137,6 +129,12 @@ impl<T> RecycledList<T> {
 
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
         self.enumerate_mut().map(|x| &mut x.data)
+    }
+}
+
+impl<T> Default for RecycledList<T> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

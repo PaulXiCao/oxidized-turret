@@ -6,8 +6,7 @@ mod utils;
 
 use entities::*;
 use external::{
-    to_external_turret, to_external_turret_with_stats, ExternalState, ExternalTurret, GameResult,
-    TurretRef,
+    to_external_turret, to_external_turret_with_stats, ExternalState, GameResult, TurretRef,
 };
 use path::find_path;
 use recycled_list::{RecycledList, RecycledListRef};
@@ -25,7 +24,7 @@ pub struct Game {
 fn compute_creep_paths(game: &Game) -> Option<Vec<FloatPosition>> {
     let mut paths = vec![];
 
-    let mut start = game.state.creep_spawn.clone();
+    let mut start = game.state.creep_spawn;
     for goal in game.state.creep_goals.iter() {
         match find_path(
             start,
@@ -120,8 +119,8 @@ impl Game {
                 .iter()
                 .map(|x| to_external_turret(x, state))
                 .collect(),
-            particles: state.particles.iter().map(|x| *x).collect(),
-            creeps: state.creeps.iter().map(|x| *x).collect(),
+            particles: state.particles.iter().copied().collect(),
+            creeps: state.creeps.iter().copied().collect(),
             cell_length: state.cell_length,
             health: state.health,
             game_result,
@@ -133,9 +132,8 @@ impl Game {
 
     // fixme: create enum for kind instead of error-prone i32
     pub fn build_tower(&mut self, x: f32, y: f32, kind: i32) {
-        match self.state.game_phase {
-            GamePhase::Fighting => return,
-            _ => (),
+        if let GamePhase::Fighting = self.state.game_phase {
+            return;
         }
 
         let cost = match kind {
@@ -161,8 +159,7 @@ impl Game {
         if self
             .turret_state
             .iter()
-            .find(|x| x.general_data.pos == grid_pos)
-            .is_some()
+            .any(|x| x.general_data.pos == grid_pos)
         {
             return;
         }
@@ -202,23 +199,17 @@ impl Game {
             .turret_state
             .enumerate()
             .find(|x| x.data.general_data.pos == grid_pos);
-        match value {
-            None => None,
-            Some(x) => Some(TurretRef {
-                data: to_external_turret_with_stats(&x.data, &self.state),
-                turret_ref: x.item_ref.clone(),
-            }),
-        }
+        value.map(|x| TurretRef {
+            data: to_external_turret_with_stats(&x.data, &self.state),
+            turret_ref: x.item_ref,
+        })
     }
 
     pub fn get_tower_by_ref(&self, turret_ref: RecycledListRef) -> Option<TurretRef> {
-        match self.turret_state.get(turret_ref) {
-            Some(turret) => Some(TurretRef {
-                data: to_external_turret_with_stats(turret, &self.state),
-                turret_ref,
-            }),
-            None => None,
-        }
+        self.turret_state.get(turret_ref).map(|turret| TurretRef {
+            data: to_external_turret_with_stats(turret, &self.state),
+            turret_ref,
+        })
     }
 
     pub fn sell_tower(&mut self, turret_ref: RecycledListRef) {
@@ -265,11 +256,8 @@ impl Game {
     }
 
     pub fn start_wave(&mut self) {
-        match self.state.game_phase {
-            GamePhase::Building => {
-                self.state.game_phase = GamePhase::Fighting;
-            }
-            _ => (),
+        if let GamePhase::Building = self.state.game_phase {
+            self.state.game_phase = GamePhase::Fighting;
         }
     }
 
@@ -277,9 +265,8 @@ impl Game {
         if !self.state.still_running {
             return;
         }
-        match self.state.game_phase {
-            GamePhase::Building => return,
-            _ => (),
+        if let GamePhase::Building = self.state.game_phase {
+            return;
         }
 
         if (self.state.tick - self.state.last_spawn > 120) && (self.state.unspawned_creeps > 0) {
@@ -310,7 +297,7 @@ impl Game {
                 creep.walking.steps_taken = 0;
             }
             if creep.walking.current_goal == self.state.creep_path.len() as u32 - 1 {
-                creeps_to_remove.push(creep_item.item_ref.clone());
+                creeps_to_remove.push(creep_item.item_ref);
                 self.state.health -= 1;
                 if self.state.health == 0 {
                     self.state.still_running = false;
@@ -329,7 +316,7 @@ impl Game {
             }
         }
         for creep_to_remove in creeps_to_remove.iter() {
-            self.state.creeps.remove(creep_to_remove.clone());
+            self.state.creeps.remove(*creep_to_remove);
         }
 
         if (self.state.unspawned_creeps == 0) && self.state.creeps.is_empty() {
@@ -369,7 +356,7 @@ impl Game {
                 target_creep.health -= particle.damage;
                 if target_creep.health <= 0.0 {
                     self.state.gold += target_creep.gold; // todo: gold per killed creep depending on level?
-                    self.state.creeps.remove(particle.target.clone());
+                    self.state.creeps.remove(particle.target);
                 }
             } else {
                 let dx = target_creep.pos.x - particle.pos.x;
@@ -380,9 +367,15 @@ impl Game {
         }
 
         for particle_to_remove in particles_to_remove.iter() {
-            self.state.particles.remove(particle_to_remove.clone());
+            self.state.particles.remove(*particle_to_remove);
         }
         self.state.tick += 1;
+    }
+}
+
+impl Default for Game {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
