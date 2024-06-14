@@ -13,6 +13,14 @@ cargo build
 cargo run
 ```
 
+## Linter
+
+Running Rust's linter [clippy](https://github.com/rust-lang/rust-clippy):
+```bash
+rustup component add clippy
+cargo clippy
+```
+
 ## How to debug
 
 Install VSCode + Extensions:
