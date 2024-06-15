@@ -144,14 +144,14 @@ fn test_test() {
     let ref1 = v.add(String::from("test1"));
     let ref2 = v.add(String::from("test2"));
 
-    v.remove(ref1.clone());
+    v.remove(ref1);
     assert!(Option::is_none(&v.get_mut(ref1)));
-    assert_eq!(*v.get_mut(ref2.clone()).unwrap(), String::from("test2"));
+    assert_eq!(*v.get_mut(ref2).unwrap(), String::from("test2"));
 
     let ref3 = v.add(String::from("test3"));
     let ref4 = v.add(String::from("test4"));
 
-    assert_eq!(*v.get_mut(ref2.clone()).unwrap(), String::from("test2"));
-    assert_eq!(*v.get_mut(ref3.clone()).unwrap(), String::from("test3"));
-    assert_eq!(*v.get_mut(ref4.clone()).unwrap(), String::from("test4"));
+    assert_eq!(*v.get_mut(ref2).unwrap(), String::from("test2"));
+    assert_eq!(*v.get_mut(ref3).unwrap(), String::from("test3"));
+    assert_eq!(*v.get_mut(ref4).unwrap(), String::from("test4"));
 }
