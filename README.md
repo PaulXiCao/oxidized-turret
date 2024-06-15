@@ -18,7 +18,7 @@ cargo run
 Running Rust's linter [clippy](https://github.com/rust-lang/rust-clippy):
 ```bash
 rustup component add clippy
-cargo clippy
+cargo clippy --all-targets --all-features
 ```
 
 ## How to debug
