@@ -21,51 +21,7 @@ export function createGameCanvas(htmlCanvas) {
     /**
      * @param {ExternalState} state
      */
-    drawState(state, uiState, time) {
-      gameArt.clear();
-
-      gameArt.drawMap(state.board_dimension_x, state.board_dimension_y);
-
-      gameArt.startCreepPath(
-        state.creep_path[0].x,
-        state.creep_path[0].y,
-        time
-      );
-      for (const line of state.creep_path.slice(1)) {
-        gameArt.drawCreepPathLine(line.x, line.y);
-      }
-      gameArt.endCreepPath();
-
-      gameArt.drawCreepSpawn(
-        state.creep_spawn.x,
-        state.creep_spawn.y,
-        state.cell_length
-      );
-      for (const goal of state.creep_goals) {
-        gameArt.drawCreepGoal(goal.x, goal.y, state.cell_length);
-      }
-
-      for (const turret of state.turrets) {
-        gameArt.drawTurret(
-          turret.pos.x,
-          turret.pos.y,
-          turret.rotation,
-          state.cell_length,
-          turret.kind
-        );
-      }
-      for (const creep of state.creeps) {
-        gameArt.drawCreep(
-          creep.pos.x,
-          creep.pos.y,
-          creep.health / creep.max_health,
-          state.current_level
-        );
-      }
-      for (const particle of state.particles) {
-        gameArt.drawParticle(particle.pos.x, particle.pos.y);
-      }
-
+    drawState(state, uiState) {
       if (uiState.selectedTower) {
         const tower = uiState.selectedTower.data.turret;
         canvas.fillCircle(
@@ -107,6 +63,9 @@ export function createGameCanvas(htmlCanvas) {
     },
     handleDragEnd(pos) {
       startOffset = null;
+    },
+    getArt() {
+      return gameArt;
     },
   };
 }

@@ -15,7 +15,7 @@ import * as wasm from "../wasm/oxidized_turret_bg.js";
  * @param {object} options
  * @param {wasm.Game} options.gameEngine
  */
-export function createStateHandler({ gameEngine, gameCanvas, ui }) {
+export function createStateHandler({ gameEngine, gameCanvas, ui, art }) {
   const uiState = new Proxy(
     {
       phase: wasm.GamePhase.Building,
@@ -115,7 +115,8 @@ export function createStateHandler({ gameEngine, gameCanvas, ui }) {
       uiState.phase = gameState.phase;
       uiState.result = gameState.game_result;
 
-      gameCanvas.drawState(gameState, uiState, time);
+      gameEngine.draw_state(gameCanvas.getArt(), time);
+      gameCanvas.drawState(gameState, uiState);
     },
 
     increaseAnimationSpeed() {

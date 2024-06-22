@@ -1,4 +1,3 @@
-use crate::entities::{Creep, Particle};
 use crate::recycled_list::RecycledListRef;
 use crate::utils::{to_float_position, FloatPosition};
 use crate::{
@@ -168,15 +167,6 @@ pub enum GameResult {
 #[wasm_bindgen(getter_with_clone)]
 #[derive(Clone)]
 pub struct ExternalState {
-    // upper-left corner (0,0), lower-right corner (nx-1, nx-1)
-    pub board_dimension_x: f32, // no. of grid points in x-direction
-    pub board_dimension_y: f32, // no. of grid points in y-direction
-    pub creep_spawn: FloatPosition,
-    pub creep_goals: Vec<FloatPosition>,
-    pub creep_path: Vec<FloatPosition>,
-    pub turrets: Vec<ExternalTurret>,
-    pub creeps: Vec<Creep>,
-    pub particles: Vec<Particle>,
     pub cell_length: f32,
     pub health: u32,
     pub game_result: GameResult,

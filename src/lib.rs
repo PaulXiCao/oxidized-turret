@@ -1,9 +1,11 @@
+mod art;
 mod entities;
 mod external;
 mod path;
 mod recycled_list;
 mod utils;
 
+use art::Art;
 use entities::*;
 use external::{
     to_external_turret, to_external_turret_with_stats, ExternalState, GameResult, TurretRef,
@@ -111,28 +113,55 @@ impl Game {
         };
 
         ExternalState {
-            board_dimension_x: state.board_dimension_x as f32 * state.cell_length,
-            board_dimension_y: state.board_dimension_y as f32 * state.cell_length,
-            creep_spawn: to_float_position(state.creep_spawn, state.cell_length),
-            creep_goals: state
-                .creep_goals
-                .iter()
-                .map(|x| to_float_position(*x, state.cell_length))
-                .collect(),
-            creep_path: state.creep_path.clone(),
-            turrets: self
-                .turret_state
-                .iter()
-                .map(|x| to_external_turret(x, state))
-                .collect(),
-            particles: state.particles.iter().copied().collect(),
-            creeps: state.creeps.iter().copied().collect(),
             cell_length: state.cell_length,
             health: state.health,
             game_result,
             current_level: state.current_level,
             gold: state.gold,
             phase: state.game_phase.clone(),
+        }
+    }
+
+    pub fn draw_state(&self, art: &Art, time: f32) {
+        let state = &self.state;
+
+        art.clear();
+        art.drawMap(
+            state.board_dimension_x as f32 * state.cell_length,
+            state.board_dimension_y as f32 * state.cell_length,
+        );
+
+        art.startCreepPath(state.creep_path[0].x, state.creep_path[0].y, time);
+        for line in &state.creep_path[1..] {
+            art.drawCreepPathLine(line.x, line.y);
+        }
+        art.endCreepPath();
+
+        let creep_spawn = to_float_position(state.creep_spawn, state.cell_length);
+        art.drawCreepSpawn(creep_spawn.x, creep_spawn.y, state.cell_length);
+
+        for goal in &state.creep_goals {
+            let creep_goal = to_float_position(*goal, state.cell_length);
+            art.drawCreepGoal(creep_goal.x, creep_goal.y, state.cell_length);
+        }
+
+        for turret in self.turret_state.iter() {
+            let external_turret = to_external_turret(turret, state);
+            art.drawTurret(
+                external_turret.pos.x,
+                external_turret.pos.y,
+                external_turret.rotation,
+                state.cell_length,
+                external_turret.kind,
+            )
+        }
+
+        for creep in state.creeps.iter() {
+            art.drawCreep(creep.pos.x, creep.pos.y, creep.health / creep.max_health, 0);
+        }
+
+        for particle in state.particles.iter() {
+            art.drawParticle(particle.pos.x, particle.pos.y);
         }
     }
 
