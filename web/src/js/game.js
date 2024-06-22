@@ -37,63 +37,42 @@ export function createGameCanvas(htmlCanvas) {
 
       if (uiState.selectedTower) {
         const tower = uiState.selectedTower.data.turret;
-        canvas.fillCircle({
-          x: tower.pos.x + state.cell_length / 2,
-          y: tower.pos.y + state.cell_length / 2,
-          r: tower.range,
-          color: "rgba(0,255,0,0.1)",
-        });
+        canvas.fillCircle(
+          tower.pos.x + state.cell_length / 2,
+          tower.pos.y + state.cell_length / 2,
+          tower.range,
+          "rgba(0,255,0,0.1)"
+        );
 
         if (uiState.upgrading) {
           const nextRange = uiState.selectedTower.data.next_stats.find(
             (stat) => stat.key === "Range"
           )?.value;
           if (nextRange) {
-            canvas.fillCircle({
-              x: tower.pos.x + state.cell_length / 2,
-              y: tower.pos.y + state.cell_length / 2,
-              r: nextRange * state.cell_length,
-              color: "rgba(0,255,0,0.1)",
-            });
+            canvas.fillCircle(
+              tower.pos.x + state.cell_length / 2,
+              tower.pos.y + state.cell_length / 2,
+              nextRange * state.cell_length,
+              "rgba(0,255,0,0.1)"
+            );
           }
         }
       }
-    },
-    /**
-     * @param {ExternalState} state
-     */
-    indicateTurret(state, realPos) {
-      const { x, y } = canvas.realToCanvas(realPos);
-
-      let gridX = Math.floor(x / state.cell_length) * state.cell_length;
-      let gridY = Math.floor(y / state.cell_length) * state.cell_length;
-
-      canvas.fillRect({
-        x: gridX,
-        y: gridY,
-        width: state.cell_length,
-        height: state.cell_length,
-        color: "rgba(255, 255, 255, 0.1)",
-      });
-      gameArt.drawTurret(
-        { pos: { x: gridX, y: gridY }, rotation: 0 },
-        state.cell_length
-      );
     },
     handleWheel({ dirY }) {
       canvas.setScale(clamp(canvas.getScale() + 0.02 * dirY, 0.25, 4));
     },
     handleResize({ width, height }) {
-      canvas.resize({ width, height });
+      canvas.resize(width, height);
     },
     handleDragStart(pos) {
       startOffset = canvas.getOffset();
     },
     handleDragMove({ initialPos, currentPos }) {
-      canvas.setOffset({
-        x: startOffset.x + currentPos.x - initialPos.x,
-        y: startOffset.y + currentPos.y - initialPos.y,
-      });
+      canvas.setOffset(
+        startOffset.x + currentPos.x - initialPos.x,
+        startOffset.y + currentPos.y - initialPos.y
+      );
     },
     handleDragEnd(pos) {
       startOffset = null;

@@ -136,14 +136,8 @@ export function createUi({
         towerDetailSidebar.style.display = "none";
       }
 
-      uiCanvas.fillCircle({ x: 10, y: 40, r: 7, color: "gray" });
-      uiCanvas.fillText({
-        x: 7,
-        y: 44,
-        fontSize: 12,
-        text: "1",
-        color: "black",
-      });
+      uiCanvas.fillCircle(10, 40, 7, "gray");
+      uiCanvas.fillText(7, 44, "1", "black", 12);
 
       health.innerText = `Health: ${uiState.health}`;
       wave.innerText = `Wave: ${uiState.wave}`;
@@ -177,7 +171,7 @@ export function createUi({
       }
     },
     handleResize({ width, height }) {
-      uiCanvas.resize({ width, height });
+      uiCanvas.resize(width, height);
     },
   };
 }

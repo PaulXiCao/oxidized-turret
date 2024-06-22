@@ -25,91 +25,76 @@ export class Art {
     let turretColor = "white";
     if (turret.kind === 1) turretColor = "red";
 
-    this.canvas.strokeRect({
-      x,
-      y,
-      width: turretSize,
-      height: turretSize,
-      color: turretColor,
-    });
+    this.canvas.strokeRect(x, y, turretSize, turretSize, turretColor);
 
     const cannonLength = turretSize / 2;
-    this.canvas.drawLine({
-      start: {
-        x: x + cannonLength,
-        y: y + cannonLength,
-      },
-      end: {
-        x: x + cannonLength * (1 + Math.cos(turret.rotation)),
-        y: y + cannonLength * (1 + Math.sin(turret.rotation)),
-      },
-      color: "white",
-    });
+    this.canvas.drawLine(
+      x + cannonLength,
+      y + cannonLength,
+      x + cannonLength * (1 + Math.cos(turret.rotation)),
+      y + cannonLength * (1 + Math.sin(turret.rotation)),
+      "white"
+    );
   }
 
   drawParticle(particle) {
-    this.canvas.fillCircle({
-      x: particle.pos.x,
-      y: particle.pos.y,
-      r: PARTICLE_SIZE,
-      color: "silver",
-    });
+    this.canvas.fillCircle(
+      particle.pos.x,
+      particle.pos.y,
+      PARTICLE_SIZE,
+      "silver"
+    );
   }
 
   drawCreep(creep, current_level) {
-    this.canvas.fillTriangle({
-      x: creep.pos.x,
-      y: creep.pos.y,
-      size: CREEP_SIZE,
-      color: current_level == "1" ? "yellow" : "red",
-    });
+    this.canvas.fillTriangle(
+      creep.pos.x,
+      creep.pos.y,
+      CREEP_SIZE,
+      current_level == "1" ? "yellow" : "red"
+    );
 
     const healthPercentage = creep.health / creep.max_health;
 
-    this.canvas.fillRect({
-      x: creep.pos.x - CREEP_SIZE / 2,
-      y: creep.pos.y - CREEP_SIZE / 2 - HEALTH_BAR_HEIGHT,
-      width: CREEP_SIZE * healthPercentage,
-      height: HEALTH_BAR_HEIGHT,
-      color: "green",
-    });
+    this.canvas.fillRect(
+      creep.pos.x - CREEP_SIZE / 2,
+      creep.pos.y - CREEP_SIZE / 2 - HEALTH_BAR_HEIGHT,
+      CREEP_SIZE * healthPercentage,
+      HEALTH_BAR_HEIGHT,
+      "green"
+    );
   }
 
   /**
    * @param {wasm.ExternalState} state
    */
   drawMap(state, time) {
-    this.canvas.strokeRect({
-      x: 0,
-      y: 0,
-      width: state.board_dimension_x,
-      height: state.board_dimension_y,
-      color: "white",
-    });
+    this.canvas.strokeRect(
+      0,
+      0,
+      state.board_dimension_x,
+      state.board_dimension_y,
+      "white"
+    );
 
-    this.canvas.drawPath({
-      points: state.creep_path,
-      color: "white",
-      segments: [3, 5],
-      dashOffset: -time / 60,
-    });
+    this.canvas.drawPath(state.creep_path, "white", -time / 60);
 
-    this.canvas.fillRect({
-      x: state.creep_spawn.x,
-      y: state.creep_spawn.y,
-      width: state.cell_length,
-      height: state.cell_length,
-      color: "rgba(0, 255, 0, 0.3)",
-    });
+    this.canvas.fillRect(
+      state.creep_spawn.x,
+      state.creep_spawn.y,
+      state.cell_length,
+      state.cell_length,
+      "rgba(0, 255, 0, 0.3)"
+    );
 
     for (const goal of state.creep_goals) {
-      this.canvas.fillRect({
-        x: goal.x,
-        y: goal.y,
-        width: state.cell_length,
-        height: state.cell_length,
-        color: "rgba(255, 0, 0, 0.3)",
-      });
+      this.canvas.fillRect(
+        goal.x,
+        goal.y,
+        state.cell_length,
+        state.cell_length,
+        "rgba(255, 0, 0, 0.3)"
+      );
     }
   }
 

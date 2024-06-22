@@ -20,11 +20,10 @@ export class Canvas {
   }
 
   /**
-   * @param {object} options
-   * @param {number} options.x
-   * @param {number} options.y
+   * @param {number} x
+   * @param {number} y
    */
-  setOffset({ x, y }) {
+  setOffset(x, y) {
     this.offsetX = x;
     this.offsetY = y;
   }
@@ -47,7 +46,7 @@ export class Canvas {
     this.scale = scale;
   }
 
-  strokeRect({ x, y, width, height, color }) {
+  strokeRect(x, y, width, height, color) {
     this.ctx.strokeStyle = color;
     this.ctx.strokeRect(
       x / this.scale + this.offsetX,
@@ -57,7 +56,7 @@ export class Canvas {
     );
   }
 
-  fillRect({ x, y, width, height, color }) {
+  fillRect(x, y, width, height, color) {
     this.ctx.fillStyle = color;
     this.ctx.fillRect(
       x / this.scale + this.offsetX,
@@ -67,24 +66,24 @@ export class Canvas {
     );
   }
 
-  drawLine({ start, end, color }) {
+  drawLine(startX, startY, endX, endY, color) {
     this.ctx.strokeStyle = color;
     this.ctx.beginPath();
     this.ctx.moveTo(
-      start.x / this.scale + this.offsetX,
-      start.y / this.scale + this.offsetY
+      startX / this.scale + this.offsetX,
+      startY / this.scale + this.offsetY
     );
     this.ctx.lineTo(
-      end.x / this.scale + this.offsetX,
-      end.y / this.scale + this.offsetY
+      endX / this.scale + this.offsetX,
+      endY / this.scale + this.offsetY
     );
     this.ctx.stroke();
   }
 
-  drawPath({ points, color, segments = [], dashOffset = 0 }) {
+  drawPath(points, color, dashOffset) {
     this.ctx.strokeStyle = color;
     this.ctx.beginPath();
-    this.ctx.setLineDash(segments);
+    this.ctx.setLineDash([3, 5]);
     this.ctx.lineDashOffset = dashOffset;
 
     const start = points[0];
@@ -103,7 +102,7 @@ export class Canvas {
     this.ctx.setLineDash([]);
   }
 
-  fillCircle({ x, y, r, color }) {
+  fillCircle(x, y, r, color) {
     this.ctx.fillStyle = color;
     this.ctx.beginPath();
     this.ctx.arc(
@@ -116,13 +115,13 @@ export class Canvas {
     this.ctx.fill();
   }
 
-  fillText({ x, y, text, color, fontSize, maxWidth = undefined }) {
+  fillText(x, y, text, color, fontSize) {
     this.ctx.fillStyle = color;
     this.ctx.font = `bold ${fontSize}px Courier`;
-    this.ctx.fillText(text, x, y, maxWidth);
+    this.ctx.fillText(text, x, y);
   }
 
-  fillTriangle({ x, y, size, color }) {
+  fillTriangle(x, y, size, color) {
     this.ctx.fillStyle = color;
     this.ctx.beginPath();
     this.ctx.moveTo(
@@ -153,7 +152,7 @@ export class Canvas {
     return { width: this.canvas.width, height: this.canvas.height };
   }
 
-  resize({ width, height }) {
+  resize(width, height) {
     this.canvas.width = width;
     this.canvas.height = height;
   }
