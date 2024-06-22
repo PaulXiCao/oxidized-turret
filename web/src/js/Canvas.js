@@ -80,6 +80,29 @@ export class Canvas {
     this.ctx.stroke();
   }
 
+  startPath(x, y, color, dashOffset) {
+    this.ctx.strokeStyle = color;
+    this.ctx.beginPath();
+    this.ctx.setLineDash([3, 5]);
+    this.ctx.lineDashOffset = dashOffset;
+
+    this.ctx.moveTo(
+      x / this.scale + this.offsetX,
+      y / this.scale + this.offsetY
+    );
+  }
+  drawPathLine(x, y) {
+    this.ctx.lineTo(
+      x / this.scale + this.offsetX,
+      y / this.scale + this.offsetY
+    );
+  }
+  endPath() {
+    this.ctx.stroke();
+    // reset line dash
+    this.ctx.setLineDash([]);
+  }
+
   drawPath(points, color, dashOffset) {
     this.ctx.strokeStyle = color;
     this.ctx.beginPath();

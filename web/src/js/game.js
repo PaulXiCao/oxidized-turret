@@ -25,7 +25,17 @@ export function createGameCanvas(htmlCanvas) {
       gameArt.clear();
 
       gameArt.drawMap(state.board_dimension_x, state.board_dimension_y);
-      gameArt.drawPath(state.creep_path, time);
+
+      gameArt.startCreepPath(
+        state.creep_path[0].x,
+        state.creep_path[0].y,
+        time
+      );
+      for (const line of state.creep_path.slice(1)) {
+        gameArt.drawCreepPathLine(line.x, line.y);
+      }
+      gameArt.endCreepPath();
+
       gameArt.drawCreepSpawn(
         state.creep_spawn.x,
         state.creep_spawn.y,

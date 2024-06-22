@@ -53,8 +53,16 @@ export class Art {
     this.canvas.strokeRect(0, 0, width, height, "white");
   }
 
-  drawPath(creepPath, time) {
-    this.canvas.drawPath(creepPath, "white", -time / 60);
+  startCreepPath(x, y, time) {
+    this.canvas.startPath(x, y, "white", -time / 60);
+  }
+
+  drawCreepPathLine(x, y) {
+    this.canvas.drawPathLine(x, y);
+  }
+
+  endCreepPath() {
+    this.canvas.endPath();
   }
 
   drawCreepSpawn(x, y, size) {
