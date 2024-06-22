@@ -41,12 +41,12 @@ pub const BASIC: [StaticBasicData; 11] = [
     // 0
     StaticBasicData {
         range: 2.0,
-        damage: 7.5,
+        damage: 3.0,
         attack_speed: 1.25,
         rotation_speed: 90.0,
         projectile_speed: 2.8,
         damage_multiplier: 100.0,
-        cost: 50,
+        cost: 20,
     },
     // 1
     StaticBasicData {
@@ -56,7 +56,7 @@ pub const BASIC: [StaticBasicData; 11] = [
         rotation_speed: 90.0,
         projectile_speed: 3.0,
         damage_multiplier: 100.0,
-        cost: 20,
+        cost: 50,
     },
     // 2
     StaticBasicData {

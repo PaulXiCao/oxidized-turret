@@ -64,10 +64,16 @@ impl Game {
         utils::set_panic_hook();
 
         let state = State {
-            board_dimension_x: 20,
-            board_dimension_y: 15,
-            creep_spawn: GridPosition { x: 0, y: 9 },
-            creep_goals: vec![GridPosition { x: 10, y: 5 }, GridPosition { x: 19, y: 9 }],
+            board_dimension_x: 40,
+            board_dimension_y: 30,
+            creep_spawn: GridPosition { x: 2, y: 0 },
+            creep_goals: vec![
+                GridPosition { x: 2, y: 15 },
+                GridPosition { x: 37, y: 15 },
+                GridPosition { x: 37, y: 2 },
+                GridPosition { x: 20, y: 2 },
+                GridPosition { x: 20, y: 27 },
+            ],
             creep_path: vec![],
             last_spawn: 0,
             unspawned_creeps: 10,
@@ -78,7 +84,7 @@ impl Game {
             health: 10,
             still_running: true,
             current_level: 1,
-            max_level: 10,
+            max_level: 1000,
             game_phase: GamePhase::Building,
             gold: 200,
             tick: 0,
@@ -283,8 +289,8 @@ impl Game {
                     current_goal: 0,
                     steps_taken: 0,
                 },
-                speed: 60 - (self.state.current_level - 1) * 2,
-                gold: 4,
+                speed: 60,
+                gold: 4 + self.state.current_level,
             });
         }
 
@@ -321,8 +327,7 @@ impl Game {
 
         if (self.state.unspawned_creeps == 0) && self.state.creeps.is_empty() {
             self.state.current_level += 1;
-            self.state.creep_count_per_level =
-                (10.0 * 1.2_f32.powi(self.state.current_level as i32)) as u32;
+            self.state.creep_count_per_level += 1;
 
             if self.state.current_level > self.state.max_level {
                 self.state.still_running = false;
