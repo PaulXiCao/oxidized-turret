@@ -106,7 +106,7 @@ export function createStateHandler({ gameEngine, gameCanvas, ui, art }) {
       }
     },
     handleTimeStep(time) {
-      for (let i = 0; i < uiState.animationSpeed; i += 1) {
+      for (let i = 0; i < 2 ** uiState.animationSpeed; i += 1) {
         gameEngine.update_state();
       }
 
