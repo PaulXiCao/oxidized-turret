@@ -117,20 +117,6 @@ impl Game {
         game
     }
 
-    fn split_borrow(
-        &mut self,
-    ) -> (
-        &mut RecycledList<Particle>,
-        &mut RecycledList<Creep>,
-        &mut u32,
-    ) {
-        (
-            &mut self.state.particles,
-            &mut self.state.creeps,
-            &mut self.state.gold,
-        )
-    }
-
     pub fn get_state(&self) -> ExternalState {
         let state = &self.state;
 

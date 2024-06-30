@@ -622,7 +622,7 @@ pub struct SniperParticle {
 
 impl ParticleWithLifetime for SniperParticle {
     fn lifetime_in_ticks(&self) -> u32 {
-        return self.lifetime_in_ticks;
+        self.lifetime_in_ticks
     }
 
     fn decrement_lifetime(&mut self) {
@@ -639,7 +639,7 @@ pub struct CannonParticle {
 
 impl ParticleWithLifetime for CannonParticle {
     fn lifetime_in_ticks(&self) -> u32 {
-        return self.lifetime_in_ticks;
+        self.lifetime_in_ticks
     }
 
     fn decrement_lifetime(&mut self) {
