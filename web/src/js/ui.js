@@ -20,15 +20,6 @@ function drawBasicTurret(uiCanvas, uiArt, uiState) {
 }
 
 function drawSniperTurret(uiCanvas, uiArt, uiState) {
-  // draw background
-  uiCanvas.fillRect({
-    x: 0,
-    y: 50,
-    width: 50,
-    height: uiCanvas.getSize().height,
-    color: "#222222",
-  });
-
   // draw selection
   if (uiState.selectedTurret === 1) {
     uiCanvas.fillRect(0, 50, 50, 50, "green");
@@ -36,6 +27,16 @@ function drawSniperTurret(uiCanvas, uiArt, uiState) {
 
   // draw icon
   uiArt.drawTurret(10, 60, 10, 30, 1);
+}
+
+function drawCannonTurret(uiCanvas, uiArt, uiState) {
+  // draw selection
+  if (uiState.selectedTurret === 2) {
+    uiCanvas.fillRect(0, 100, 50, 50, "green");
+  }
+
+  // draw icon
+  uiArt.drawTurret(10, 110, 90, 30, 2);
 }
 
 function round(num) {
@@ -61,6 +62,7 @@ export function createUi({
     drawUi(uiState) {
       drawBasicTurret(uiCanvas, uiArt, uiState);
       drawSniperTurret(uiCanvas, uiArt, uiState);
+      drawCannonTurret(uiCanvas, uiArt, uiState);
 
       if (uiState.selectedTower) {
         /** @type {TurretRef} */

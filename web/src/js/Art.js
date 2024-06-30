@@ -13,8 +13,7 @@ export class Art {
   }
 
   drawTurret(x, y, rotation, size, type) {
-    let turretColor = "white";
-    if (type === 1) turretColor = "red";
+    let turretColor = ["yellow", "red", "cyan"][type];
 
     this.canvas.strokeRect(x, y, size, size, turretColor);
 
@@ -24,7 +23,7 @@ export class Art {
       y + cannonLength,
       x + cannonLength * (1 + Math.cos(rotation)),
       y + cannonLength * (1 + Math.sin(rotation)),
-      "white"
+      turretColor
     );
   }
 

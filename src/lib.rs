@@ -188,6 +188,7 @@ impl Game {
         let cost = match kind {
             0 => BASIC[0].cost,
             1 => SNIPER[0].cost,
+            2 => CANNON[0].cost,
             _ => panic!("gotcha! tower kind not implemented!"),
         };
 
@@ -228,6 +229,10 @@ impl Game {
                     rotation: 0.0,
                     target: RecycledListRef::null_ref(),
                     aiming_ticks: 0,
+                }),
+                2 => SpecificData::Cannon(DynamicCannonData {
+                    rotation: 0.0,
+                    target: RecycledListRef::null_ref(),
                 }),
                 _ => panic!("gotcha! tower kind not implemented!"),
             },
@@ -392,6 +397,7 @@ impl Game {
         let mut particles_to_remove: Vec<RecycledListRef> = vec![];
         let mut creeps_to_remove: Vec<RecycledListRef> = vec![];
 
+        let cell_length = self.state.cell_length;
         let (particles, creeps, gold) = self.split_borrow();
 
         for particle_item in particles.enumerate_mut() {
@@ -409,7 +415,8 @@ impl Game {
                 particles_to_remove.push(particle_item.item_ref);
 
                 for creep_in_radius_item in creeps.enumerate_mut().filter(|creep| {
-                    distance(creep.data.pos, target_creep.pos) <= particle.explosion_radius
+                    distance(creep.data.pos, target_creep.pos)
+                        <= particle.explosion_radius * cell_length
                 }) {
                     let creep_in_radius = &mut creep_in_radius_item.data;
                     creep_in_radius.health -= particle.damage;
