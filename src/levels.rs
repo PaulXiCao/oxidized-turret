@@ -1,4 +1,4 @@
-use crate::spawn::Spawn;
+use crate::{spawn::Spawn, CreepKind};
 
 fn create_normal(level: u32) -> Spawn {
     Spawn {
@@ -7,6 +7,7 @@ fn create_normal(level: u32) -> Spawn {
         health: 34.0 * 1.2_f32.powi(level as i32),
         speed: 60,
         bounty: 4 + level,
+        kind: CreepKind::Normal,
     }
 }
 
@@ -17,6 +18,7 @@ fn create_grouped(level: u32) -> Spawn {
         health: (34.0 * 1.2_f32.powi(level as i32)) / 2.0,
         speed: 60,
         bounty: 2 + level / 2,
+        kind: CreepKind::Grouped,
     }
 }
 
@@ -27,6 +29,7 @@ fn create_speed(level: u32) -> Spawn {
         health: 34.0 * 1.2_f32.powi(level as i32),
         speed: 30,
         bounty: 4 + level,
+        kind: CreepKind::Speed,
     }
 }
 
@@ -37,6 +40,7 @@ fn create_big(level: u32) -> Spawn {
         health: (34.0 * 1.2_f32.powi(level as i32)) * 2.0,
         speed: 60,
         bounty: (4 + level) * 2,
+        kind: CreepKind::Big,
     }
 }
 

@@ -193,7 +193,12 @@ impl Game {
         }
 
         for creep in state.creeps.iter() {
-            art.drawCreep(creep.pos.x, creep.pos.y, creep.health / creep.max_health, 0);
+            art.drawCreep(
+                creep.pos.x,
+                creep.pos.y,
+                creep.health / creep.max_health,
+                creep.kind,
+            );
         }
 
         for particle in state.particles.iter() {

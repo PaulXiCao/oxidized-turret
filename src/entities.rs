@@ -15,7 +15,15 @@ pub struct WalkingProgress {
     pub steps_taken: u32,
 }
 
+#[derive(Copy, Clone)]
 #[wasm_bindgen]
+pub enum CreepKind {
+    Normal,
+    Grouped,
+    Speed,
+    Big,
+}
+
 #[derive(Clone, Copy)]
 pub struct Creep {
     pub pos: FloatPosition,
@@ -24,6 +32,7 @@ pub struct Creep {
     pub walking: WalkingProgress,
     pub speed: u32, // no. of ticks to walk one grid cell, lower is faster
     pub gold: u32,
+    pub kind: CreepKind,
 }
 
 #[derive(Copy, Clone)]

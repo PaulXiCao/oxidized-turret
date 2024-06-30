@@ -1,4 +1,5 @@
 import { Canvas } from "./Canvas.js";
+import { CreepKind } from "../wasm/oxidized_turret_bg.js";
 
 const PARTICLE_SIZE = 5;
 const CREEP_SIZE = 20;
@@ -39,13 +40,24 @@ export class Art {
     this.canvas.drawLine(x, y, x2, y2, "white");
   }
 
-  drawCreep(x, y, healthPercentage, currentLevel) {
-    this.canvas.fillTriangle(
-      x,
-      y,
-      CREEP_SIZE,
-      currentLevel == "1" ? "yellow" : "red"
-    );
+  drawCreep(x, y, healthPercentage, kind) {
+    if (kind === CreepKind.Normal) {
+      this.canvas.fillCircle(x, y, CREEP_SIZE / 2.0, "green");
+    } else if (kind === CreepKind.Grouped) {
+      this.canvas.fillCircle(x, y, CREEP_SIZE / 4.0, "green");
+    } else if (kind === CreepKind.Speed) {
+      this.canvas.fillTriangle(x, y, CREEP_SIZE, "yellow");
+    } else if (kind === CreepKind.Big) {
+      this.canvas.fillRect(
+        x - CREEP_SIZE / 2.0,
+        y - CREEP_SIZE / 2.0,
+        CREEP_SIZE,
+        CREEP_SIZE,
+        "red"
+      );
+    } else {
+      throw new Error(`Uninmplemented kreep kind '${kind}'...`);
+    }
 
     this.canvas.fillRect(
       x - CREEP_SIZE / 2,

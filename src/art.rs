@@ -1,5 +1,7 @@
 use wasm_bindgen::prelude::*;
 
+use crate::CreepKind;
+
 #[wasm_bindgen(raw_module = "./js/Art.js")]
 extern "C" {
     pub type Art;
@@ -17,7 +19,7 @@ extern "C" {
     pub fn drawSniperParticle(this: &Art, x: f32, y: f32, x2: f32, y2: f32);
 
     #[wasm_bindgen(method)]
-    pub fn drawCreep(this: &Art, x: f32, y: f32, health_percentage: f32, level: u32);
+    pub fn drawCreep(this: &Art, x: f32, y: f32, health_percentage: f32, kind: CreepKind);
 
     #[wasm_bindgen(method)]
     pub fn drawMap(this: &Art, width: f32, height: f32);

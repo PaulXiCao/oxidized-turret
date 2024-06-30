@@ -1,4 +1,4 @@
-use crate::{utils::FloatPosition, Creep, WalkingProgress};
+use crate::{utils::FloatPosition, Creep, CreepKind, WalkingProgress};
 
 #[derive(Clone)]
 pub struct Spawn {
@@ -7,6 +7,7 @@ pub struct Spawn {
     pub health: f32,
     pub speed: u32,
     pub bounty: u32, // bounty for the whole spawn. per creep this is bounty / quantity
+    pub kind: CreepKind,
 }
 
 pub struct Spawner {
@@ -47,6 +48,7 @@ impl Spawner {
                 },
                 speed: self.spawn.speed,
                 gold: self.spawn.bounty,
+                kind: self.spawn.kind,
             });
         }
         None
