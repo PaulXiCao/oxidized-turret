@@ -16,6 +16,7 @@ cargo run
 ## Linter
 
 Running Rust's linter [clippy](https://github.com/rust-lang/rust-clippy):
+
 ```bash
 rustup component add clippy
 cargo clippy --all-targets --all-features
@@ -36,11 +37,16 @@ Great documentation available [here](https://rustwasm.github.io/docs/book/game-o
 
 Summary:
 
+- Setup Node.js >= 22.0 (use the Node Version Manager: https://github.com/nvm-sh/nvm)
+
+```
+nvm install 22
+```
+
 - Setup: Install wasm-pack, npm
 
 ```bash
 curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-npm install npm@latest -g
 ```
 
 - Build wasm binary and js bindings:
