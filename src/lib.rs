@@ -470,33 +470,27 @@ impl Game {
             self.state.particles.remove(*particle_to_remove);
         }
 
-        // cannon animation explosion
-        let mut cannon_particles_to_remove: Vec<RecycledListRef> = vec![];
-        for particle_item in self.cannon_particles.enumerate_mut() {
-            let particle = &mut particle_item.data;
-            if particle.lifetime_in_ticks == 1 {
-                cannon_particles_to_remove.push(particle_item.item_ref);
-            }
-            particle.lifetime_in_ticks -= 1;
-        }
-        for particle_to_remove in cannon_particles_to_remove.iter() {
-            self.cannon_particles.remove(*particle_to_remove);
-        }
-
-        // cannon animation explosion
-        let mut sniper_particles_to_remove: Vec<RecycledListRef> = vec![];
-        for particle_item in self.state.sniper_particles.enumerate_mut() {
-            let particle = &mut particle_item.data;
-            if particle.lifetime_in_ticks == 1 {
-                sniper_particles_to_remove.push(particle_item.item_ref);
-            }
-            particle.lifetime_in_ticks -= 1;
-        }
-        for particle_to_remove in sniper_particles_to_remove.iter() {
-            self.state.sniper_particles.remove(*particle_to_remove);
-        }
+        update_particle_with_lifetime(&mut self.cannon_particles);
+        update_particle_with_lifetime(&mut self.state.sniper_particles);
 
         self.state.tick += 1;
+    }
+}
+
+fn update_particle_with_lifetime<T: Clone + ParticleWithLifetime>(
+    sniper_particles: &mut RecycledList<T>,
+) {
+    // cannon animation explosion
+    let mut sniper_particles_to_remove: Vec<RecycledListRef> = vec![];
+    for particle_item in sniper_particles.enumerate_mut() {
+        let particle = &mut particle_item.data;
+        if particle.lifetime_in_ticks() == 1 {
+            sniper_particles_to_remove.push(particle_item.item_ref);
+        }
+        particle.decrement_lifetime();
+    }
+    for particle_to_remove in sniper_particles_to_remove.iter() {
+        sniper_particles.remove(*particle_to_remove);
     }
 }
 

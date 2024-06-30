@@ -608,6 +608,11 @@ pub struct Particle {
     pub explosion_radius: f32,
 }
 
+pub trait ParticleWithLifetime {
+    fn lifetime_in_ticks(&self) -> u32;
+    fn decrement_lifetime(&mut self);
+}
+
 #[derive(Clone, Copy)]
 pub struct SniperParticle {
     pub start_pos: FloatPosition,
@@ -615,9 +620,29 @@ pub struct SniperParticle {
     pub lifetime_in_ticks: u32, // delete at 0
 }
 
+impl ParticleWithLifetime for SniperParticle {
+    fn lifetime_in_ticks(&self) -> u32 {
+        return self.lifetime_in_ticks;
+    }
+
+    fn decrement_lifetime(&mut self) {
+        self.lifetime_in_ticks -= 1
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct CannonParticle {
     pub pos: FloatPosition,
     pub explosion_radius: f32,
     pub lifetime_in_ticks: u32, // delete at 0
+}
+
+impl ParticleWithLifetime for CannonParticle {
+    fn lifetime_in_ticks(&self) -> u32 {
+        return self.lifetime_in_ticks;
+    }
+
+    fn decrement_lifetime(&mut self) {
+        self.lifetime_in_ticks -= 1
+    }
 }
