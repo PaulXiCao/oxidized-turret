@@ -75,7 +75,7 @@ impl Game {
         let state = State {
             board_dimension_x: 40,
             board_dimension_y: 30,
-            creep_spawn: creep_spawn.clone(),
+            creep_spawn,
             creep_goals: vec![
                 GridPosition { x: 2, y: 15 },
                 GridPosition { x: 37, y: 15 },
@@ -102,7 +102,7 @@ impl Game {
             turret_state: RecycledList::new(),
             cannon_particles: RecycledList::new(),
             spawner: Spawner::new(
-                to_creep_position(creep_spawn.clone(), cell_length),
+                to_creep_position(creep_spawn, cell_length),
                 Spawn {
                     quantity: 10,
                     distance_in_ticks: 60,
@@ -348,9 +348,10 @@ impl Game {
             return;
         }
 
-        let creep = self.spawner.tick();
-        if creep.is_some() {
-            self.state.creeps.add(creep.unwrap());
+        let creep_to_spawn = self.spawner.tick();
+
+        if let Some(creep) = creep_to_spawn {
+            self.state.creeps.add(creep);
         }
 
         let mut creeps_to_remove: Vec<RecycledListRef> = vec![];
