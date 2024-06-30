@@ -470,27 +470,26 @@ impl Game {
             self.state.particles.remove(*particle_to_remove);
         }
 
-        update_particle_with_lifetime(&mut self.cannon_particles);
-        update_particle_with_lifetime(&mut self.state.sniper_particles);
+        update_particles_with_lifetime(&mut self.cannon_particles);
+        update_particles_with_lifetime(&mut self.state.sniper_particles);
 
         self.state.tick += 1;
     }
 }
 
-fn update_particle_with_lifetime<T: Clone + ParticleWithLifetime>(
-    sniper_particles: &mut RecycledList<T>,
+fn update_particles_with_lifetime<T: Clone + ParticleWithLifetime>(
+    particles: &mut RecycledList<T>,
 ) {
-    // cannon animation explosion
-    let mut sniper_particles_to_remove: Vec<RecycledListRef> = vec![];
-    for particle_item in sniper_particles.enumerate_mut() {
+    let mut particles_to_remove: Vec<RecycledListRef> = vec![];
+    for particle_item in particles.enumerate_mut() {
         let particle = &mut particle_item.data;
         if particle.lifetime_in_ticks() == 1 {
-            sniper_particles_to_remove.push(particle_item.item_ref);
+            particles_to_remove.push(particle_item.item_ref);
         }
         particle.decrement_lifetime();
     }
-    for particle_to_remove in sniper_particles_to_remove.iter() {
-        sniper_particles.remove(*particle_to_remove);
+    for particle_to_remove in particles_to_remove.iter() {
+        particles.remove(*particle_to_remove);
     }
 }
 
