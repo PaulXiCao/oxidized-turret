@@ -392,6 +392,13 @@ impl FollowsTarget for DynamicSniperData {
             self.aiming_ticks = 0;
 
             let mut_target_creep = state.creeps.get_mut(self.target).unwrap();
+
+            state.sniper_particles.add(SniperParticle {
+                start_pos: to_creep_position(general_data.pos, state.cell_length),
+                target_pos: mut_target_creep.pos,
+                lifetime_in_ticks: 5,
+            });
+
             mut_target_creep.health -= turret_data.damage;
             if mut_target_creep.health <= 0.0 {
                 state.gold += mut_target_creep.gold;
@@ -599,6 +606,13 @@ pub struct Particle {
     pub damage: f32,
     pub speed: f32, // pixel per tick
     pub explosion_radius: f32,
+}
+
+#[derive(Clone, Copy)]
+pub struct SniperParticle {
+    pub start_pos: FloatPosition,
+    pub target_pos: FloatPosition,
+    pub lifetime_in_ticks: u32, // delete at 0
 }
 
 #[derive(Clone, Copy)]

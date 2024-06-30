@@ -83,6 +83,7 @@ impl Game {
             creep_count_per_level: 10,
             creeps: RecycledList::new(),
             particles: RecycledList::new(),
+            sniper_particles: RecycledList::new(),
             cell_length: 30.0,
             health: 10,
             still_running: true,
@@ -180,6 +181,15 @@ impl Game {
                     * self.state.cell_length
                     * particle.lifetime_in_ticks as f32
                     / 20.0,
+            );
+        }
+
+        for particle in self.state.sniper_particles.iter() {
+            art.drawSniperParticle(
+                particle.start_pos.x,
+                particle.start_pos.y,
+                particle.target_pos.x,
+                particle.target_pos.y,
             );
         }
 
@@ -461,16 +471,29 @@ impl Game {
         }
 
         // cannon animation explosion
-        let mut animation_particles_to_remove: Vec<RecycledListRef> = vec![];
+        let mut cannon_particles_to_remove: Vec<RecycledListRef> = vec![];
         for particle_item in self.cannon_particles.enumerate_mut() {
             let particle = &mut particle_item.data;
             if particle.lifetime_in_ticks == 1 {
-                animation_particles_to_remove.push(particle_item.item_ref);
+                cannon_particles_to_remove.push(particle_item.item_ref);
             }
             particle.lifetime_in_ticks -= 1;
         }
-        for particle_to_remove in animation_particles_to_remove.iter() {
+        for particle_to_remove in cannon_particles_to_remove.iter() {
             self.cannon_particles.remove(*particle_to_remove);
+        }
+
+        // cannon animation explosion
+        let mut sniper_particles_to_remove: Vec<RecycledListRef> = vec![];
+        for particle_item in self.state.sniper_particles.enumerate_mut() {
+            let particle = &mut particle_item.data;
+            if particle.lifetime_in_ticks == 1 {
+                sniper_particles_to_remove.push(particle_item.item_ref);
+            }
+            particle.lifetime_in_ticks -= 1;
+        }
+        for particle_to_remove in sniper_particles_to_remove.iter() {
+            self.state.sniper_particles.remove(*particle_to_remove);
         }
 
         self.state.tick += 1;
@@ -503,6 +526,7 @@ pub struct State {
     pub creep_path: Vec<FloatPosition>,
     pub creeps: RecycledList<Creep>,
     pub particles: RecycledList<Particle>,
+    pub sniper_particles: RecycledList<SniperParticle>,
     pub cell_length: f32,
     pub health: u32,
     pub still_running: bool,

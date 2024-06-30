@@ -35,6 +35,10 @@ export class Art {
     this.canvas.fillCircle(x, y, r, "orange");
   }
 
+  drawSniperParticle(x, y, x2, y2) {
+    this.canvas.drawLine(x, y, x2, y2, "white");
+  }
+
   drawCreep(x, y, healthPercentage, currentLevel) {
     this.canvas.fillTriangle(
       x,
