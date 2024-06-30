@@ -11,6 +11,9 @@ extern "C" {
     pub fn drawParticle(this: &Art, x: f32, y: f32);
 
     #[wasm_bindgen(method)]
+    pub fn drawCannonParticle(this: &Art, x: f32, y: f32, r: f32);
+
+    #[wasm_bindgen(method)]
     pub fn drawCreep(this: &Art, x: f32, y: f32, health_percentage: f32, level: u32);
 
     #[wasm_bindgen(method)]

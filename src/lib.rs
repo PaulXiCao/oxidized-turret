@@ -21,6 +21,7 @@ use wasm_bindgen::prelude::*;
 pub struct Game {
     state: State,
     turret_state: RecycledList<Turret>,
+    cannon_particles: RecycledList<CannonParticle>,
 }
 
 fn compute_creep_paths(game: &Game) -> Option<Vec<FloatPosition>> {
@@ -95,6 +96,7 @@ impl Game {
         let mut game = Game {
             state,
             turret_state: RecycledList::new(),
+            cannon_particles: RecycledList::new(),
         };
         game.state.creep_path = compute_creep_paths(&game).unwrap();
 
@@ -168,6 +170,17 @@ impl Game {
                 state.cell_length,
                 external_turret.kind,
             )
+        }
+
+        for particle in self.cannon_particles.iter() {
+            art.drawCannonParticle(
+                particle.pos.x,
+                particle.pos.y,
+                particle.explosion_radius
+                    * self.state.cell_length
+                    * particle.lifetime_in_ticks as f32
+                    / 20.0,
+            );
         }
 
         for creep in state.creeps.iter() {
@@ -398,7 +411,7 @@ impl Game {
         let mut creeps_to_remove: Vec<RecycledListRef> = vec![];
 
         let cell_length = self.state.cell_length;
-        let (particles, creeps, gold) = self.split_borrow();
+        let (particles, creeps, gold) = self.state.split_borrow();
 
         for particle_item in particles.enumerate_mut() {
             let particle = &mut particle_item.data;
@@ -413,6 +426,11 @@ impl Game {
             let d = distance(target_creep.pos, particle.pos);
             if d < 5.0 {
                 particles_to_remove.push(particle_item.item_ref);
+                self.cannon_particles.add(CannonParticle {
+                    pos: target_creep.pos,
+                    explosion_radius: particle.explosion_radius,
+                    lifetime_in_ticks: 20,
+                });
 
                 for creep_in_radius_item in creeps.enumerate_mut().filter(|creep| {
                     distance(creep.data.pos, target_creep.pos)
@@ -441,6 +459,20 @@ impl Game {
         for particle_to_remove in particles_to_remove.iter() {
             self.state.particles.remove(*particle_to_remove);
         }
+
+        // cannon animation explosion
+        let mut animation_particles_to_remove: Vec<RecycledListRef> = vec![];
+        for particle_item in self.cannon_particles.enumerate_mut() {
+            let particle = &mut particle_item.data;
+            if particle.lifetime_in_ticks == 1 {
+                animation_particles_to_remove.push(particle_item.item_ref);
+            }
+            particle.lifetime_in_ticks -= 1;
+        }
+        for particle_to_remove in animation_particles_to_remove.iter() {
+            self.cannon_particles.remove(*particle_to_remove);
+        }
+
         self.state.tick += 1;
     }
 }
@@ -480,4 +512,16 @@ pub struct State {
     gold: u32,
 
     tick: u32,
+}
+
+impl State {
+    fn split_borrow(
+        &mut self,
+    ) -> (
+        &mut RecycledList<Particle>,
+        &mut RecycledList<Creep>,
+        &mut u32,
+    ) {
+        (&mut self.particles, &mut self.creeps, &mut self.gold)
+    }
 }

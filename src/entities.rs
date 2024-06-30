@@ -590,7 +590,6 @@ impl Turret {
     }
 }
 
-#[wasm_bindgen]
 #[derive(Clone, Copy)]
 pub struct Particle {
     pub pos: FloatPosition,
@@ -600,4 +599,11 @@ pub struct Particle {
     pub damage: f32,
     pub speed: f32, // pixel per tick
     pub explosion_radius: f32,
+}
+
+#[derive(Clone, Copy)]
+pub struct CannonParticle {
+    pub pos: FloatPosition,
+    pub explosion_radius: f32,
+    pub lifetime_in_ticks: u32, // delete at 0
 }
