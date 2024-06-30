@@ -3,6 +3,7 @@ mod entities;
 mod external;
 mod path;
 mod recycled_list;
+mod spawn;
 mod utils;
 
 use art::Art;
@@ -12,6 +13,7 @@ use external::{
 };
 use path::find_path;
 use recycled_list::{RecycledList, RecycledListRef};
+use spawn::{Spawn, Spawner};
 use utils::{
     distance, to_creep_position, to_float_position, to_grid_position, FloatPosition, GridPosition,
 };
@@ -22,6 +24,7 @@ pub struct Game {
     state: State,
     turret_state: RecycledList<Turret>,
     cannon_particles: RecycledList<CannonParticle>,
+    spawner: Spawner,
 }
 
 fn compute_creep_paths(game: &Game) -> Option<Vec<FloatPosition>> {
@@ -66,10 +69,13 @@ impl Game {
     pub fn new() -> Self {
         utils::set_panic_hook();
 
+        let creep_spawn = GridPosition { x: 2, y: 0 };
+        let cell_length = 30.0;
+
         let state = State {
             board_dimension_x: 40,
             board_dimension_y: 30,
-            creep_spawn: GridPosition { x: 2, y: 0 },
+            creep_spawn: creep_spawn.clone(),
             creep_goals: vec![
                 GridPosition { x: 2, y: 15 },
                 GridPosition { x: 37, y: 15 },
@@ -78,13 +84,10 @@ impl Game {
                 GridPosition { x: 20, y: 27 },
             ],
             creep_path: vec![],
-            last_spawn: 0,
-            unspawned_creeps: 10,
-            creep_count_per_level: 10,
             creeps: RecycledList::new(),
             particles: RecycledList::new(),
             sniper_particles: RecycledList::new(),
-            cell_length: 30.0,
+            cell_length,
             health: 10,
             still_running: true,
             current_level: 1,
@@ -98,6 +101,16 @@ impl Game {
             state,
             turret_state: RecycledList::new(),
             cannon_particles: RecycledList::new(),
+            spawner: Spawner::new(
+                to_creep_position(creep_spawn.clone(), cell_length),
+                Spawn {
+                    quantity: 10,
+                    distance_in_ticks: 60,
+                    health: 34.0,
+                    speed: 60,
+                    bounty: 4,
+                },
+            ),
         };
         game.state.creep_path = compute_creep_paths(&game).unwrap();
 
@@ -349,23 +362,9 @@ impl Game {
             return;
         }
 
-        if (self.state.tick - self.state.last_spawn > 30) && (self.state.unspawned_creeps > 0) {
-            self.state.last_spawn = self.state.tick;
-            self.state.unspawned_creeps -= 1;
-
-            let scaling = 1.2_f32.powi(self.state.current_level as i32 - 1);
-
-            self.state.creeps.add(Creep {
-                pos: to_creep_position(self.state.creep_spawn, self.state.cell_length),
-                health: 17.0 * scaling,
-                max_health: 34.0 * scaling,
-                walking: WalkingProgress {
-                    current_goal: 0,
-                    steps_taken: 0,
-                },
-                speed: 60,
-                gold: 4 + self.state.current_level,
-            });
+        let creep = self.spawner.tick();
+        if creep.is_some() {
+            self.state.creeps.add(creep.unwrap());
         }
 
         let mut creeps_to_remove: Vec<RecycledListRef> = vec![];
@@ -399,14 +398,21 @@ impl Game {
             self.state.creeps.remove(*creep_to_remove);
         }
 
-        if (self.state.unspawned_creeps == 0) && self.state.creeps.is_empty() {
+        if self.spawner.is_finished() && self.state.creeps.is_empty() {
             self.state.current_level += 1;
-            self.state.creep_count_per_level += 1;
+
+            self.spawner.reset();
+            self.spawner.set_spawn(Spawn {
+                quantity: 10 + self.state.current_level,
+                distance_in_ticks: 60,
+                health: 34.0 * 1.2_f32.powi(self.state.current_level as i32),
+                speed: 60,
+                bounty: 4 + self.state.current_level,
+            });
 
             if self.state.current_level > self.state.max_level {
                 self.state.still_running = false;
             }
-            self.state.unspawned_creeps = self.state.creep_count_per_level;
             // self.state.gold += 5; // todo: should we even have gold for finishing?
             self.state.game_phase = GamePhase::Building;
             self.state.particles.clear();
@@ -513,9 +519,6 @@ pub struct State {
     pub board_dimension_y: u32, // no. of grid points in y-direction
     pub creep_spawn: GridPosition,
     pub creep_goals: Vec<GridPosition>,
-    last_spawn: u32,
-    unspawned_creeps: u32,
-    creep_count_per_level: u32,
     pub creep_path: Vec<FloatPosition>,
     pub creeps: RecycledList<Creep>,
     pub particles: RecycledList<Particle>,
