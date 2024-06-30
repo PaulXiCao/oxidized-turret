@@ -403,6 +403,8 @@ impl Game {
             // self.state.gold += 5; // todo: should we even have gold for finishing?
             self.state.game_phase = GamePhase::Building;
             self.state.particles.clear();
+            self.cannon_particles.clear();
+            self.state.sniper_particles.clear();
             return;
         }
 
