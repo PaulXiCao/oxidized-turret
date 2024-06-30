@@ -428,7 +428,7 @@ pub struct StaticCannonData {
     pub cost: u32,
 }
 
-pub const CANNON: [StaticCannonData; 1] = [
+pub const CANNON: [StaticCannonData; 11] = [
     // 0
     StaticCannonData {
         range: 1.7,
@@ -438,6 +438,106 @@ pub const CANNON: [StaticCannonData; 1] = [
         rotation_speed: 40.0,
         projectile_speed: 2.2,
         cost: 60,
+    },
+    // 1
+    StaticCannonData {
+        range: 1.9,
+        damage: 22.7,
+        explosion_radius: 0.75,
+        attack_speed: 0.7,
+        rotation_speed: 50.0,
+        projectile_speed: 2.4,
+        cost: 42,
+    },
+    // 2
+    StaticCannonData {
+        range: 2.0,
+        damage: 30.2,
+        explosion_radius: 0.9,
+        attack_speed: 0.7,
+        rotation_speed: 60.0,
+        projectile_speed: 2.6,
+        cost: 63,
+    },
+    // 3
+    StaticCannonData {
+        range: 2.15,
+        damage: 39.8,
+        explosion_radius: 1.05,
+        attack_speed: 0.85,
+        rotation_speed: 70.0,
+        projectile_speed: 2.6,
+        cost: 115,
+    },
+    // 4
+    StaticCannonData {
+        range: 2.15,
+        damage: 52.9,
+        explosion_radius: 1.2,
+        attack_speed: 1.0,
+        rotation_speed: 80.0,
+        projectile_speed: 2.7,
+        cost: 210,
+    },
+    // 5
+    StaticCannonData {
+        range: 2.3,
+        damage: 68.0,
+        explosion_radius: 1.35,
+        attack_speed: 1.1,
+        rotation_speed: 80.0,
+        projectile_speed: 2.9,
+        cost: 300,
+    },
+    // 6
+    StaticCannonData {
+        range: 2.45,
+        damage: 93.7,
+        explosion_radius: 1.5,
+        attack_speed: 1.1,
+        rotation_speed: 90.0,
+        projectile_speed: 3.0,
+        cost: 420,
+    },
+    // 7
+    StaticCannonData {
+        range: 2.6,
+        damage: 123.0,
+        explosion_radius: 1.65,
+        attack_speed: 1.25,
+        rotation_speed: 100.0,
+        projectile_speed: 3.1,
+        cost: 850,
+    },
+    // 8
+    StaticCannonData {
+        range: 2.9,
+        damage: 155.0,
+        explosion_radius: 1.8,
+        attack_speed: 1.35,
+        rotation_speed: 100.0,
+        projectile_speed: 3.2,
+        cost: 1200,
+    },
+    // 9
+    StaticCannonData {
+        range: 3.2,
+        damage: 204.0,
+        explosion_radius: 1.95,
+        attack_speed: 1.35,
+        rotation_speed: 110.0,
+        projectile_speed: 3.2,
+        cost: 1950,
+    },
+    // 10
+    StaticCannonData {
+        range: 3.2,
+        damage: 246.0,
+        explosion_radius: 2.1,
+        attack_speed: 1.4,
+        rotation_speed: 120.0,
+        projectile_speed: 3.2,
+        cost: 3000,
     },
 ];
 
