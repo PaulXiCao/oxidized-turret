@@ -1,5 +1,6 @@
 use crate::{utils::FloatPosition, Creep, WalkingProgress};
 
+#[derive(Clone)]
 pub struct Spawn {
     pub quantity: u32,
     pub distance_in_ticks: u32,

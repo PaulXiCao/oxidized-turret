@@ -1,6 +1,7 @@
 mod art;
 mod entities;
 mod external;
+mod levels;
 mod path;
 mod recycled_list;
 mod spawn;
@@ -11,6 +12,7 @@ use entities::*;
 use external::{
     to_external_turret, to_external_turret_with_stats, ExternalState, GameResult, TurretRef,
 };
+use levels::create_levels;
 use path::find_path;
 use recycled_list::{RecycledList, RecycledListRef};
 use spawn::{Spawn, Spawner};
@@ -25,6 +27,7 @@ pub struct Game {
     turret_state: RecycledList<Turret>,
     cannon_particles: RecycledList<CannonParticle>,
     spawner: Spawner,
+    levels: Vec<Spawn>,
 }
 
 fn compute_creep_paths(game: &Game) -> Option<Vec<FloatPosition>> {
@@ -72,6 +75,8 @@ impl Game {
         let creep_spawn = GridPosition { x: 2, y: 0 };
         let cell_length = 30.0;
 
+        let levels = create_levels(50);
+
         let state = State {
             board_dimension_x: 40,
             board_dimension_y: 30,
@@ -90,8 +95,8 @@ impl Game {
             cell_length,
             health: 10,
             still_running: true,
-            current_level: 1,
-            max_level: 1000,
+            current_level: 0,
+            max_level: levels.len() as u32,
             game_phase: GamePhase::Building,
             gold: 200,
             tick: 0,
@@ -103,14 +108,9 @@ impl Game {
             cannon_particles: RecycledList::new(),
             spawner: Spawner::new(
                 to_creep_position(creep_spawn, cell_length),
-                Spawn {
-                    quantity: 10,
-                    distance_in_ticks: 60,
-                    health: 34.0,
-                    speed: 60,
-                    bounty: 4,
-                },
+                levels[0].clone(),
             ),
+            levels,
         };
         game.state.creep_path = compute_creep_paths(&game).unwrap();
 
@@ -122,7 +122,7 @@ impl Game {
 
         let game_result = if state.still_running {
             GameResult::StillRunning
-        } else if state.current_level > state.max_level {
+        } else if state.current_level >= state.max_level {
             GameResult::PlayerWon
         } else {
             GameResult::CreepsWon
@@ -388,23 +388,19 @@ impl Game {
         if self.spawner.is_finished() && self.state.creeps.is_empty() {
             self.state.current_level += 1;
 
-            self.spawner.reset();
-            self.spawner.set_spawn(Spawn {
-                quantity: 10 + self.state.current_level,
-                distance_in_ticks: 60,
-                health: 34.0 * 1.2_f32.powi(self.state.current_level as i32),
-                speed: 60,
-                bounty: 4 + self.state.current_level,
-            });
-
-            if self.state.current_level > self.state.max_level {
-                self.state.still_running = false;
-            }
-            // self.state.gold += 5; // todo: should we even have gold for finishing?
-            self.state.game_phase = GamePhase::Building;
             self.state.particles.clear();
             self.cannon_particles.clear();
             self.state.sniper_particles.clear();
+
+            if self.state.current_level >= self.state.max_level {
+                self.state.still_running = false;
+                return;
+            }
+
+            self.spawner.reset();
+            self.spawner
+                .set_spawn(self.levels[self.state.current_level as usize].clone());
+            self.state.game_phase = GamePhase::Building;
             return;
         }
 
