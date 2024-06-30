@@ -199,6 +199,7 @@ impl FollowsTarget for DynamicBasicData {
                 target: self.target,
                 damage: turret_data.damage * turret_data.damage_multiplier / 100.0,
                 speed: turret_data.projectile_speed * state.cell_length / 60.0,
+                explosion_radius: 0.0,
             });
         }
     }
@@ -401,9 +402,89 @@ impl FollowsTarget for DynamicSniperData {
 }
 
 #[derive(Copy, Clone)]
+pub struct StaticCannonData {
+    pub range: f32, // tiles
+    pub damage: f32,
+    pub explosion_radius: f32,
+    pub attack_speed: f32,     // attacks/s
+    pub rotation_speed: f32,   // deg/s
+    pub projectile_speed: f32, // tiles/s
+    pub cost: u32,
+}
+
+pub const CANNON: [StaticCannonData; 1] = [
+    // 0
+    StaticCannonData {
+        range: 1.7,
+        damage: 14.0,
+        explosion_radius: 0.6,
+        attack_speed: 0.6,
+        rotation_speed: 40.0,
+        projectile_speed: 2.2,
+        cost: 60,
+    },
+];
+
+#[derive(Copy, Clone)]
+pub struct DynamicCannonData {
+    pub rotation: f32, // orientation/angle in RAD
+    pub target: RecycledListRef,
+}
+
+impl FollowsTarget for DynamicCannonData {
+    fn get_target(&self) -> RecycledListRef {
+        self.target
+    }
+
+    fn set_target(&mut self, target: RecycledListRef) {
+        self.target = target;
+    }
+
+    fn get_rotation(&self) -> f32 {
+        self.rotation
+    }
+
+    fn set_rotation(&mut self, new_rotation: f32) {
+        self.rotation = new_rotation;
+    }
+
+    fn get_rotation_speed(&self, level: u32) -> f32 {
+        CANNON[level as usize].rotation_speed
+    }
+
+    fn get_range(&self, level: u32) -> f32 {
+        CANNON[level as usize].range
+    }
+
+    fn blast(&mut self, general_data: &mut GeneralData, state: &mut State, is_in_aim: bool) {
+        let turret_data = &CANNON[general_data.level as usize];
+        if is_in_aim
+            && state.tick > general_data.last_shot + (60.0 / turret_data.attack_speed) as u32
+        {
+            // the turret position is the start of the barrel, where particles are emitted
+            let x = (general_data.pos.x as f32 + 0.5) * state.cell_length
+                + state.cell_length / 2.0 * self.rotation.cos();
+            let y = (general_data.pos.y as f32 + 0.5) * state.cell_length
+                + state.cell_length / 2.0 * self.rotation.sin();
+            let turret_pos = FloatPosition { x, y };
+
+            general_data.last_shot = state.tick;
+            state.particles.add(Particle {
+                pos: turret_pos,
+                target: self.target,
+                damage: turret_data.damage,
+                speed: turret_data.projectile_speed * state.cell_length / 60.0,
+                explosion_radius: turret_data.explosion_radius,
+            });
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
 pub enum SpecificData {
     Basic(DynamicBasicData),
     Sniper(DynamicSniperData), // fixme: create SniperData and use here
+    Cannon(DynamicCannonData),
 }
 
 #[derive(Copy, Clone)]
@@ -504,6 +585,7 @@ impl Turret {
         match &mut self.specific_data {
             SpecificData::Basic(specific_data) => update_tower(general_data, specific_data, state),
             SpecificData::Sniper(specific_data) => update_tower(general_data, specific_data, state),
+            SpecificData::Cannon(specific_data) => update_tower(general_data, specific_data, state),
         }
     }
 }
@@ -517,4 +599,5 @@ pub struct Particle {
     pub target: RecycledListRef,
     pub damage: f32,
     pub speed: f32, // pixel per tick
+    pub explosion_radius: f32,
 }

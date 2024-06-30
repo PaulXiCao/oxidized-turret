@@ -26,7 +26,7 @@ pub struct RecycledList<T> {
     free_list: Vec<usize>,
 }
 
-impl<T> RecycledList<T> {
+impl<T: Clone> RecycledList<T> {
     pub fn new() -> Self {
         RecycledList {
             current_id: 0,
@@ -45,6 +45,23 @@ impl<T> RecycledList<T> {
             Some(c) => {
                 if c.item_ref.id == item_ref.id {
                     return Some(&c.data);
+                }
+                None
+            }
+            _ => None,
+        }
+    }
+
+    pub fn get_clone(&self, item_ref: RecycledListRef) -> Option<T> {
+        if item_ref.id == 0 {
+            return None;
+        }
+
+        let item = self.items.get(item_ref.index);
+        match item {
+            Some(c) => {
+                if c.item_ref.id == item_ref.id {
+                    return Some(c.data.clone());
                 }
                 None
             }
@@ -132,7 +149,7 @@ impl<T> RecycledList<T> {
     }
 }
 
-impl<T> Default for RecycledList<T> {
+impl<T: Clone> Default for RecycledList<T> {
     fn default() -> Self {
         Self::new()
     }

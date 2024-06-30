@@ -101,6 +101,20 @@ impl Game {
         game
     }
 
+    fn split_borrow(
+        &mut self,
+    ) -> (
+        &mut RecycledList<Particle>,
+        &mut RecycledList<Creep>,
+        &mut u32,
+    ) {
+        (
+            &mut self.state.particles,
+            &mut self.state.creeps,
+            &mut self.state.gold,
+        )
+    }
+
     pub fn get_state(&self) -> ExternalState {
         let state = &self.state;
 
@@ -257,6 +271,7 @@ impl Game {
         match tower.specific_data {
             SpecificData::Basic(_) => self.state.gold += BASIC[0].cost,
             SpecificData::Sniper(_) => self.state.gold += SNIPER[0].cost,
+            SpecificData::Cannon(_) => self.state.gold += CANNON[0].cost,
         }
         self.turret_state.remove(turret_ref);
     }
@@ -271,6 +286,7 @@ impl Game {
         let max_level = match tower.specific_data {
             SpecificData::Basic(_) => BASIC.len(),
             SpecificData::Sniper(_) => SNIPER.len(),
+            SpecificData::Cannon(_) => CANNON.len(),
         };
         let next_level = (tower.general_data.level + 1) as usize;
         if next_level >= max_level {
@@ -280,6 +296,7 @@ impl Game {
         let cost = match tower.specific_data {
             SpecificData::Basic(_) => BASIC[next_level].cost,
             SpecificData::Sniper(_) => SNIPER[next_level].cost,
+            SpecificData::Cannon(_) => CANNON[next_level].cost,
         };
 
         if self.state.gold < cost {
@@ -304,7 +321,7 @@ impl Game {
             return;
         }
 
-        if (self.state.tick - self.state.last_spawn > 120) && (self.state.unspawned_creeps > 0) {
+        if (self.state.tick - self.state.last_spawn > 30) && (self.state.unspawned_creeps > 0) {
             self.state.last_spawn = self.state.tick;
             self.state.unspawned_creeps -= 1;
 
@@ -312,7 +329,7 @@ impl Game {
 
             self.state.creeps.add(Creep {
                 pos: to_creep_position(self.state.creep_spawn, self.state.cell_length),
-                health: 34.0 * scaling,
+                health: 17.0 * scaling,
                 max_health: 34.0 * scaling,
                 walking: WalkingProgress {
                     current_goal: 0,
@@ -373,10 +390,13 @@ impl Game {
         }
 
         let mut particles_to_remove: Vec<RecycledListRef> = vec![];
+        let mut creeps_to_remove: Vec<RecycledListRef> = vec![];
 
-        for particle_item in self.state.particles.enumerate_mut() {
+        let (particles, creeps, gold) = self.split_borrow();
+
+        for particle_item in particles.enumerate_mut() {
             let particle = &mut particle_item.data;
-            let target_creep_option = self.state.creeps.get_mut(particle.target);
+            let target_creep_option = creeps.get_clone(particle.target);
             if Option::is_none(&target_creep_option) {
                 particles_to_remove.push(particle_item.item_ref);
                 continue;
@@ -387,10 +407,16 @@ impl Game {
             let d = distance(target_creep.pos, particle.pos);
             if d < 5.0 {
                 particles_to_remove.push(particle_item.item_ref);
-                target_creep.health -= particle.damage;
-                if target_creep.health <= 0.0 {
-                    self.state.gold += target_creep.gold; // todo: gold per killed creep depending on level?
-                    self.state.creeps.remove(particle.target);
+
+                for creep_in_radius_item in creeps.enumerate_mut().filter(|creep| {
+                    distance(creep.data.pos, target_creep.pos) <= particle.explosion_radius
+                }) {
+                    let creep_in_radius = &mut creep_in_radius_item.data;
+                    creep_in_radius.health -= particle.damage;
+                    if creep_in_radius.health <= 0.0 {
+                        *gold += creep_in_radius.gold; // todo: gold per killed creep depending on level?
+                        creeps_to_remove.push(creep_in_radius_item.item_ref);
+                    }
                 }
             } else {
                 let dx = target_creep.pos.x - particle.pos.x;
@@ -398,6 +424,11 @@ impl Game {
                 particle.pos.x += (dx / d) * particle.speed;
                 particle.pos.y += (dy / d) * particle.speed;
             }
+        }
+
+        // Cleanup
+        for creep in creeps_to_remove.iter() {
+            creeps.remove(*creep);
         }
 
         for particle_to_remove in particles_to_remove.iter() {
