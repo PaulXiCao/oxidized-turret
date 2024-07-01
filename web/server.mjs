@@ -7,6 +7,7 @@ const MIME_TYPES = {
   js: "application/javascript",
   wasm: "application/wasm",
   json: "application/manifest+json",
+  png: "image/png",
 };
 
 let connectionId = 0;
