@@ -14,7 +14,7 @@ fn create_normal(level: u32) -> Spawn {
 fn create_grouped(level: u32) -> Spawn {
     Spawn {
         quantity: (10 + level) * 2,
-        distance_in_ticks: 60,
+        distance_in_ticks: 30,
         health: (34.0 * 1.2_f32.powi(level as i32)) / 2.0,
         speed: 60,
         bounty: 2 + level / 2,
