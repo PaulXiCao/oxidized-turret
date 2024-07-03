@@ -15,32 +15,42 @@ import * as wasm from "../wasm/oxidized_turret_bg.js";
  * @param {object} options
  * @param {wasm.Game} options.gameEngine
  */
-export function createStateHandler({ gameEngine, gameCanvas, ui, art }) {
-  const uiState = new Proxy(
-    {
-      phase: wasm.GamePhase.Building,
-      result: wasm.GameResult.StillRunning,
-      selectedTurret: null,
-      selectedTower: undefined,
-      upgrading: false,
-      health: 20,
-      wave: 1,
-      gold: 200,
-      animationSpeed: 3,
-    },
-    {
-      set(target, propertyKey, value, receiver) {
-        const prevValue = Reflect.get(target, propertyKey, receiver);
-        if (prevValue === value) {
-          return true;
-        }
+export function createStateHandler({
+  gameEngine,
+  gameCanvas,
+  ui,
+  art,
+  initialUiState = {},
+}) {
+  let state = {
+    phase: wasm.GamePhase.Building,
+    result: wasm.GameResult.StillRunning,
+    selectedTurret: null,
+    selectedTower: undefined,
+    upgrading: false,
+    health: 20,
+    wave: 1,
+    gold: 200,
+    animationSpeed: 3,
+    ...initialUiState,
+  };
 
-        const result = Reflect.set(target, propertyKey, value, receiver);
-        ui.drawUi(uiState);
-        return result;
-      },
-    }
-  );
+  if (state.selectedTower) {
+    state.selectedTower = wasm.TurretRef.__wrap(state.selectedTower.__wbg_ptr);
+  }
+
+  const uiState = new Proxy(state, {
+    set(target, propertyKey, value, receiver) {
+      const prevValue = Reflect.get(target, propertyKey, receiver);
+      if (prevValue === value) {
+        return true;
+      }
+
+      const result = Reflect.set(target, propertyKey, value, receiver);
+      ui.drawUi(uiState);
+      return result;
+    },
+  });
 
   return {
     handleClick(clickPos) {
@@ -156,6 +166,13 @@ export function createStateHandler({ gameEngine, gameCanvas, ui, art }) {
       } else {
         uiState.upgrading = true;
       }
+    },
+    getState() {
+      return {
+        uiState: JSON.parse(JSON.stringify(uiState)),
+        gameEngine,
+        gameCanvas: gameCanvas.getState(),
+      };
     },
   };
 }

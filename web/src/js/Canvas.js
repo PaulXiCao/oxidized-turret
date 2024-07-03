@@ -179,4 +179,8 @@ export class Canvas {
     this.canvas.width = width;
     this.canvas.height = height;
   }
+
+  getState() {
+    return { scale: this.scale, offsetX: this.offsetX, offsetY: this.offsetY };
+  }
 }

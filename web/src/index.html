@@ -337,25 +337,6 @@
       </div>
     </div>
 
-    <script src="./js/main.js" type="module" defer></script>
-    <script>
-      if (document.location.port === "8080") {
-        function connectEventSource() {
-          const source = new EventSource("/sse");
-          source.addEventListener(
-            "reload",
-            function eventSourceListener(event) {
-              document.location.reload();
-            }
-          );
-          source.addEventListener("error", async () => {
-            console.log("SSE connection closed. Trying to reconnect...");
-            await new Promise((res) => setTimeout(res, 500));
-            connectEventSource();
-          });
-        }
-        connectEventSource();
-      }
-    </script>
+    <script src="./js/hmr.js" type="module" defer></script>
   </body>
 </html>
