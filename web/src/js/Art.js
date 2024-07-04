@@ -14,9 +14,11 @@ export class Art {
   }
 
   drawTurret(x, y, rotation, size, type) {
-    let turretColor = ["yellow", "red", "cyan"][type];
-
-    this.canvas.strokeRect(x, y, size, size, turretColor);
+    let turretColor = ["yellow", "red", "cyan", "green"][type];
+    const ctx = this.canvas.canvas.getContext("2d");
+    let lineWidth = ctx.lineWidth;
+    ctx.lineWidth = 3;
+    this.canvas.strokeRect(x + 2, y + 2, size - 4, size - 4, turretColor);
 
     const cannonLength = size / 2;
     this.canvas.drawLine(
@@ -26,6 +28,7 @@ export class Art {
       y + cannonLength * (1 + Math.sin(rotation)),
       turretColor
     );
+    ctx.lineWidth = lineWidth;
   }
 
   drawParticle(x, y) {

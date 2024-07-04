@@ -7,9 +7,6 @@ import {
 } from "../wasm/oxidized_turret_bg.js";
 
 function drawBasicTurret(uiCanvas, uiArt, uiState) {
-  // draw background
-  uiCanvas.fillRect(0, 0, 50, uiCanvas.getSize().height, "#222222");
-
   // draw selection
   if (uiState.selectedTurret === 0) {
     uiCanvas.fillRect(0, 0, 50, 50, "green");
@@ -39,6 +36,16 @@ function drawCannonTurret(uiCanvas, uiArt, uiState) {
   uiArt.drawTurret(10, 110, 90, 30, 2);
 }
 
+function drawMultiTurret(uiCanvas, uiArt, uiState) {
+  // draw selection
+  if (uiState.selectedTurret === 3) {
+    uiCanvas.fillRect(0, 150, 50, 50, "green");
+  }
+
+  // draw icon
+  uiArt.drawTurret(10, 160, 90, 30, 3);
+}
+
 function round(num) {
   return Math.round(num * 10) / 10;
 }
@@ -60,9 +67,12 @@ export function createUi({
 
   return {
     drawUi(uiState) {
+      // draw background
+      uiCanvas.fillRect(0, 0, 50, uiCanvas.getSize().height, "#222222");
       drawBasicTurret(uiCanvas, uiArt, uiState);
       drawSniperTurret(uiCanvas, uiArt, uiState);
       drawCannonTurret(uiCanvas, uiArt, uiState);
+      drawMultiTurret(uiCanvas, uiArt, uiState);
 
       if (uiState.selectedTower) {
         /** @type {TurretRef} */

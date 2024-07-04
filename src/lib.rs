@@ -14,7 +14,7 @@ use external::{
 };
 use levels::create_levels;
 use path::find_path;
-use recycled_list::{RecycledList, RecycledListRef};
+use recycled_list::{RecycledList, RecycledListItem, RecycledListRef};
 use spawn::{Spawn, Spawner};
 use utils::{
     distance, to_creep_position, to_float_position, to_grid_position, FloatPosition, GridPosition,
@@ -92,6 +92,7 @@ impl Game {
             creeps: RecycledList::new(),
             particles: RecycledList::new(),
             sniper_particles: RecycledList::new(),
+            multi_particles: RecycledList::new(),
             cell_length,
             health: 10,
             still_running: true,
@@ -204,6 +205,10 @@ impl Game {
         for particle in state.particles.iter() {
             art.drawParticle(particle.pos.x, particle.pos.y);
         }
+
+        for particle in state.multi_particles.iter() {
+            art.drawParticle(particle.pos.x, particle.pos.y);
+        }
     }
 
     // fixme: create enum for kind instead of error-prone i32
@@ -216,6 +221,7 @@ impl Game {
             0 => BASIC[0].cost,
             1 => SNIPER[0].cost,
             2 => CANNON[0].cost,
+            3 => MULTI[0].cost,
             _ => panic!("gotcha! tower kind not implemented!"),
         };
 
@@ -258,6 +264,10 @@ impl Game {
                     aiming_ticks: 0,
                 }),
                 2 => SpecificData::Cannon(DynamicCannonData {
+                    rotation: 0.0,
+                    target: RecycledListRef::null_ref(),
+                }),
+                3 => SpecificData::Multi(DynamicMultiData {
                     rotation: 0.0,
                     target: RecycledListRef::null_ref(),
                 }),
@@ -304,6 +314,7 @@ impl Game {
             SpecificData::Basic(_) => self.state.gold += BASIC[0].cost,
             SpecificData::Sniper(_) => self.state.gold += SNIPER[0].cost,
             SpecificData::Cannon(_) => self.state.gold += CANNON[0].cost,
+            SpecificData::Multi(_) => self.state.gold += MULTI[0].cost,
         }
         self.turret_state.remove(turret_ref);
     }
@@ -319,6 +330,7 @@ impl Game {
             SpecificData::Basic(_) => BASIC.len(),
             SpecificData::Sniper(_) => SNIPER.len(),
             SpecificData::Cannon(_) => CANNON.len(),
+            SpecificData::Multi(_) => MULTI.len(),
         };
         let next_level = (tower.general_data.level + 1) as usize;
         if next_level >= max_level {
@@ -329,6 +341,7 @@ impl Game {
             SpecificData::Basic(_) => BASIC[next_level].cost,
             SpecificData::Sniper(_) => SNIPER[next_level].cost,
             SpecificData::Cannon(_) => CANNON[next_level].cost,
+            SpecificData::Multi(_) => MULTI[next_level].cost,
         };
 
         if self.state.gold < cost {
@@ -417,7 +430,7 @@ impl Game {
         let mut creeps_to_remove: Vec<RecycledListRef> = vec![];
 
         let cell_length = self.state.cell_length;
-        let (particles, creeps, gold) = self.state.split_borrow();
+        let (particles, creeps, multi_particles, gold) = self.state.split_borrow();
 
         for particle_item in particles.enumerate_mut() {
             let particle = &mut particle_item.data;
@@ -457,6 +470,39 @@ impl Game {
             }
         }
 
+        //Calculate damage for multi particles
+        let mut multi_particles_to_remove: Vec<RecycledListRef> = vec![];
+        for particle_item in multi_particles.enumerate_mut() {
+            let particle = &mut particle_item.data;
+            let mut best_distance: f32 = 10.0;
+            let mut best_creep: Option<&mut RecycledListItem<Creep>> = None;
+            for creep_in_radius_item in creeps.enumerate_mut() {
+                let d = distance(creep_in_radius_item.data.pos, particle.pos);
+                if d < best_distance {
+                    best_creep = Some(creep_in_radius_item);
+                    best_distance = d;
+                }
+            }
+            if best_creep.is_some() {
+                let creep_item = best_creep.unwrap();
+                multi_particles_to_remove.push(particle_item.item_ref);
+                let creep = creep_item;
+                creep.data.health -= particle.damage;
+                if creep.data.health <= 0.0 {
+                    *gold += creep.data.gold; // todo: gold per killed creep depending on level?
+                    creeps_to_remove.push(creep.item_ref);
+                }
+            }
+        }
+        for particle_to_remove in multi_particles_to_remove.iter() {
+            multi_particles.remove(*particle_to_remove);
+        }
+
+        // Move multi particles
+        for particle in multi_particles.iter_mut() {
+            particle.pos += particle.direction * particle.speed;
+        }
+
         // Cleanup
         for creep in creeps_to_remove.iter() {
             creeps.remove(*creep);
@@ -468,6 +514,7 @@ impl Game {
 
         update_particles_with_lifetime(&mut self.cannon_particles);
         update_particles_with_lifetime(&mut self.state.sniper_particles);
+        update_particles_with_lifetime(&mut self.state.multi_particles);
 
         self.state.tick += 1;
     }
@@ -513,6 +560,7 @@ pub struct State {
     pub creeps: RecycledList<Creep>,
     pub particles: RecycledList<Particle>,
     pub sniper_particles: RecycledList<SniperParticle>,
+    pub multi_particles: RecycledList<MultiParticle>,
     pub cell_length: f32,
     pub health: u32,
     pub still_running: bool,
@@ -530,8 +578,14 @@ impl State {
     ) -> (
         &mut RecycledList<Particle>,
         &mut RecycledList<Creep>,
+        &mut RecycledList<MultiParticle>,
         &mut u32,
     ) {
-        (&mut self.particles, &mut self.creeps, &mut self.gold)
+        (
+            &mut self.particles,
+            &mut self.creeps,
+            &mut self.multi_particles,
+            &mut self.gold,
+        )
     }
 }

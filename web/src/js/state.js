@@ -53,6 +53,8 @@ export function createStateHandler({ gameEngine, gameCanvas, ui, art }) {
           new_turret = 1;
         } else if (clickPos.y < 150) {
           new_turret = 2;
+        } else if (clickPos.y < 200) {
+          new_turret = 3;
         }
 
         if (new_turret !== null) {

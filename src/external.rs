@@ -1,8 +1,8 @@
 use crate::recycled_list::RecycledListRef;
 use crate::utils::{to_float_position, FloatPosition};
 use crate::{
-    DynamicBasicData, DynamicCannonData, DynamicSniperData, FollowsTarget, GamePhase, SpecificData,
-    State, Turret, BASIC, CANNON, SNIPER,
+    DynamicBasicData, DynamicCannonData, DynamicMultiData, DynamicSniperData, FollowsTarget,
+    GamePhase, SpecificData, State, Turret, BASIC, CANNON, MULTI, SNIPER,
 };
 use wasm_bindgen::prelude::*;
 
@@ -22,16 +22,19 @@ pub fn to_external_turret(turret: &Turret, state: &State) -> ExternalTurret {
             SpecificData::Basic(d) => d.rotation,
             SpecificData::Sniper(d) => d.rotation,
             SpecificData::Cannon(d) => d.rotation,
+            SpecificData::Multi(d) => d.rotation,
         },
         range: match &turret.specific_data {
             SpecificData::Basic(d) => d.get_range(turret.general_data.level) * state.cell_length,
             SpecificData::Sniper(d) => d.get_range(turret.general_data.level) * state.cell_length,
             SpecificData::Cannon(d) => d.get_range(turret.general_data.level) * state.cell_length,
+            SpecificData::Multi(d) => d.get_range(turret.general_data.level) * state.cell_length,
         },
         kind: match &turret.specific_data {
             SpecificData::Basic(_) => 0,
             SpecificData::Sniper(_) => 1,
             SpecificData::Cannon(_) => 2,
+            SpecificData::Multi(_) => 3,
         },
     }
 }
@@ -75,6 +78,47 @@ impl HasStats for DynamicBasicData {
             Stat {
                 key: String::from("Projectile Speed"),
                 value: BASIC[level as usize].projectile_speed,
+                unit: String::from("tiles/s"),
+            },
+        ]
+    }
+}
+
+impl HasStats for DynamicMultiData {
+    fn stats(&self, level: u32) -> Vec<Stat> {
+        if level as usize >= MULTI.len() {
+            return vec![];
+        }
+
+        vec![
+            Stat {
+                key: String::from("Level"),
+                value: (level + 1) as f32,
+                unit: String::from(""),
+            },
+            Stat {
+                key: String::from("Range"),
+                value: MULTI[level as usize].range,
+                unit: String::from("tiles"),
+            },
+            Stat {
+                key: String::from("Damage"),
+                value: MULTI[level as usize].damage,
+                unit: String::from(""),
+            },
+            Stat {
+                key: String::from("Attack speed"),
+                value: MULTI[level as usize].attack_speed,
+                unit: String::from("/s"),
+            },
+            Stat {
+                key: String::from("Rotation speed"),
+                value: MULTI[level as usize].rotation_speed,
+                unit: String::from("deg/s"),
+            },
+            Stat {
+                key: String::from("Projectile Speed"),
+                value: MULTI[level as usize].projectile_speed,
                 unit: String::from("tiles/s"),
             },
         ]
@@ -165,11 +209,13 @@ pub fn to_external_turret_with_stats(turret: &Turret, state: &State) -> External
             SpecificData::Basic(d) => d.stats(turret.general_data.level),
             SpecificData::Sniper(d) => d.stats(turret.general_data.level),
             SpecificData::Cannon(d) => d.stats(turret.general_data.level),
+            SpecificData::Multi(d) => d.stats(turret.general_data.level),
         },
         next_stats: match turret.specific_data {
             SpecificData::Basic(d) => d.stats(turret.general_data.level + 1),
             SpecificData::Sniper(d) => d.stats(turret.general_data.level + 1),
             SpecificData::Cannon(d) => d.stats(turret.general_data.level + 1),
+            SpecificData::Multi(d) => d.stats(turret.general_data.level + 1),
         },
     }
 }

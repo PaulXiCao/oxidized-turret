@@ -27,6 +27,13 @@ impl ops::Add<FloatPosition> for FloatPosition {
     }
 }
 
+impl ops::AddAssign<FloatPosition> for FloatPosition {
+    fn add_assign(&mut self, rhs: FloatPosition) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+    }
+}
+
 impl ops::Sub<FloatPosition> for FloatPosition {
     type Output = FloatPosition;
 

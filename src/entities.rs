@@ -597,10 +597,224 @@ impl FollowsTarget for DynamicCannonData {
 }
 
 #[derive(Copy, Clone)]
+pub struct StaticMultiData {
+    pub range: f32, // tiles
+    pub damage: f32,
+    pub attack_speed: f32,     // attacks/s
+    pub rotation_speed: f32,   // deg/s
+    pub projectile_speed: f32, // tiles/s
+    pub cost: u32,
+}
+
+pub const MULTI: [StaticMultiData; 11] = [
+    // 0
+    StaticMultiData {
+        range: 3.0,
+        damage: 5.5,
+        attack_speed: 1.0,
+        rotation_speed: 50.0,
+        projectile_speed: 2.0,
+        cost: 90,
+    },
+    // 1
+    StaticMultiData {
+        range: 3.2,
+        damage: 7.2,
+        attack_speed: 1.1,
+        rotation_speed: 55.0,
+        projectile_speed: 2.2,
+        cost: 35,
+    },
+    // 2
+    StaticMultiData {
+        range: 3.3,
+        damage: 9.6,
+        attack_speed: 1.25,
+        rotation_speed: 60.0,
+        projectile_speed: 2.4,
+        cost: 68,
+    },
+    // 3
+    StaticMultiData {
+        range: 3.45,
+        damage: 13.0,
+        attack_speed: 1.25,
+        rotation_speed: 68.0,
+        projectile_speed: 2.6,
+        cost: 120,
+    },
+    // 4
+    StaticMultiData {
+        range: 3.45,
+        damage: 17.0,
+        attack_speed: 1.4,
+        rotation_speed: 70.0,
+        projectile_speed: 2.6,
+        cost: 170,
+    },
+    // 5
+    StaticMultiData {
+        range: 3.65,
+        damage: 21.1,
+        attack_speed: 1.55,
+        rotation_speed: 70.0,
+        projectile_speed: 2.8,
+        cost: 280,
+    },
+    // 6
+    StaticMultiData {
+        range: 3.85,
+        damage: 29.2,
+        attack_speed: 1.55,
+        rotation_speed: 74.0,
+        projectile_speed: 3.0,
+        cost: 460,
+    },
+    // 7
+    StaticMultiData {
+        range: 4.1,
+        damage: 40.0,
+        attack_speed: 1.7,
+        rotation_speed: 80.0,
+        projectile_speed: 3.0,
+        cost: 660,
+    },
+    // 8
+    StaticMultiData {
+        range: 4.1,
+        damage: 51.2,
+        attack_speed: 1.8,
+        rotation_speed: 85.0,
+        projectile_speed: 3.25,
+        cost: 1150,
+    },
+    // 9
+    StaticMultiData {
+        range: 4.35,
+        damage: 64.0,
+        attack_speed: 1.8,
+        rotation_speed: 90.0,
+        projectile_speed: 3.4,
+        cost: 1750,
+    },
+    // 10
+    StaticMultiData {
+        range: 4.5,
+        damage: 84.3,
+        attack_speed: 1.9,
+        rotation_speed: 90.0,
+        projectile_speed: 3.5,
+        cost: 2650,
+    },
+];
+
+#[derive(Copy, Clone)]
+pub struct DynamicMultiData {
+    pub rotation: f32, // orientation/angle in RAD
+    pub target: RecycledListRef,
+}
+
+impl FollowsTarget for DynamicMultiData {
+    fn get_target(&self) -> RecycledListRef {
+        self.target
+    }
+
+    fn set_target(&mut self, target: RecycledListRef) {
+        self.target = target;
+    }
+
+    fn get_rotation(&self) -> f32 {
+        self.rotation
+    }
+
+    fn set_rotation(&mut self, new_rotation: f32) {
+        self.rotation = new_rotation;
+    }
+
+    fn get_rotation_speed(&self, level: u32) -> f32 {
+        MULTI[level as usize].rotation_speed
+    }
+
+    fn get_range(&self, level: u32) -> f32 {
+        MULTI[level as usize].range
+    }
+
+    fn blast(&mut self, general_data: &mut GeneralData, state: &mut State, is_in_aim: bool) {
+        let turret_data = &MULTI[general_data.level as usize];
+        if is_in_aim
+            && state.tick > general_data.last_shot + (60.0 / turret_data.attack_speed) as u32
+        {
+            // the turret position is the start of the barrel, where particles are emitted
+            let x = (general_data.pos.x as f32 + 0.5) * state.cell_length
+                + state.cell_length / 2.0 * self.rotation.cos();
+            let y = (general_data.pos.y as f32 + 0.5) * state.cell_length
+                + state.cell_length / 2.0 * self.rotation.sin();
+            let turret_pos = FloatPosition { x, y };
+            let speed = turret_data.projectile_speed * state.cell_length / 60.0;
+            let lifetime = (state.cell_length
+                * ((turret_data.range - state.cell_length / 60.0) / speed))
+                as u32;
+            // self.target.clone().
+
+            let target_creep_option = state.creeps.get_clone(self.target);
+            if Option::is_none(&target_creep_option) {
+                return;
+            }
+
+            let target_creep = target_creep_option.unwrap();
+
+            fn rotate(pos: FloatPosition, angle: f32) -> FloatPosition {
+                let angle_radiants = PI * angle / 180.0;
+                let c = angle_radiants.cos();
+                let s = angle_radiants.sin();
+                return FloatPosition {
+                    x: pos.x * c + pos.y * s,
+                    y: pos.y * c - pos.x * s,
+                };
+            }
+
+            fn normalize(pos: FloatPosition) -> FloatPosition {
+                let c = (pos.x * pos.x + pos.y * pos.y).sqrt();
+                return FloatPosition {
+                    x: pos.x / c,
+                    y: pos.y / c,
+                };
+            }
+            let direction = normalize(target_creep.pos - turret_pos);
+
+            general_data.last_shot = state.tick;
+
+            state.multi_particles.add(MultiParticle {
+                pos: turret_pos,
+                direction: direction,
+                damage: turret_data.damage,
+                lifetime_in_ticks: lifetime,
+                speed: speed,
+            });
+            state.multi_particles.add(MultiParticle {
+                pos: turret_pos,
+                direction: rotate(direction, 30.0),
+                damage: turret_data.damage,
+                lifetime_in_ticks: lifetime,
+                speed: speed,
+            });
+            state.multi_particles.add(MultiParticle {
+                pos: turret_pos,
+                direction: rotate(direction, -30.0),
+                damage: turret_data.damage,
+                lifetime_in_ticks: lifetime,
+                speed: speed,
+            });
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
 pub enum SpecificData {
     Basic(DynamicBasicData),
     Sniper(DynamicSniperData), // fixme: create SniperData and use here
     Cannon(DynamicCannonData),
+    Multi(DynamicMultiData),
 }
 
 #[derive(Copy, Clone)]
@@ -702,6 +916,7 @@ impl Turret {
             SpecificData::Basic(specific_data) => update_tower(general_data, specific_data, state),
             SpecificData::Sniper(specific_data) => update_tower(general_data, specific_data, state),
             SpecificData::Cannon(specific_data) => update_tower(general_data, specific_data, state),
+            SpecificData::Multi(specific_data) => update_tower(general_data, specific_data, state),
         }
     }
 }
@@ -747,6 +962,25 @@ pub struct CannonParticle {
 }
 
 impl ParticleWithLifetime for CannonParticle {
+    fn lifetime_in_ticks(&self) -> u32 {
+        self.lifetime_in_ticks
+    }
+
+    fn decrement_lifetime(&mut self) {
+        self.lifetime_in_ticks -= 1
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct MultiParticle {
+    pub pos: FloatPosition,
+    pub direction: FloatPosition,
+    pub damage: f32,
+    pub speed: f32,             // pixel per tick
+    pub lifetime_in_ticks: u32, // delete at 0
+}
+
+impl ParticleWithLifetime for MultiParticle {
     fn lifetime_in_ticks(&self) -> u32 {
         self.lifetime_in_ticks
     }
