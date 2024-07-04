@@ -12,7 +12,7 @@ use entities::*;
 use external::{
     to_external_turret, to_external_turret_with_stats, ExternalState, GameResult, TurretRef,
 };
-use levels::create_levels;
+use levels::create_level;
 use path::find_path;
 use recycled_list::{RecycledList, RecycledListItem, RecycledListRef};
 use spawn::{Spawn, Spawner};
@@ -27,7 +27,6 @@ pub struct Game {
     turret_state: RecycledList<Turret>,
     cannon_particles: RecycledList<CannonParticle>,
     spawner: Spawner,
-    levels: Vec<Spawn>,
 }
 
 fn compute_creep_paths(game: &Game) -> Option<Vec<FloatPosition>> {
@@ -75,8 +74,6 @@ impl Game {
         let creep_spawn = GridPosition { x: 2, y: 0 };
         let cell_length = 30.0;
 
-        let levels = create_levels(50);
-
         let state = State {
             board_dimension_x: 40,
             board_dimension_y: 30,
@@ -97,7 +94,7 @@ impl Game {
             health: 10,
             still_running: true,
             current_level: 0,
-            max_level: levels.len() as u32,
+            max_level: 50,
             game_phase: GamePhase::Building,
             gold: 200,
             tick: 0,
@@ -107,11 +104,7 @@ impl Game {
             state,
             turret_state: RecycledList::new(),
             cannon_particles: RecycledList::new(),
-            spawner: Spawner::new(
-                to_creep_position(creep_spawn, cell_length),
-                levels[0].clone(),
-            ),
-            levels,
+            spawner: Spawner::new(to_creep_position(creep_spawn, cell_length), create_level(0)),
         };
         game.state.creep_path = compute_creep_paths(&game).unwrap();
 
@@ -417,7 +410,7 @@ impl Game {
 
             self.spawner.reset();
             self.spawner
-                .set_spawn(self.levels[self.state.current_level as usize].clone());
+                .set_spawn(create_level(self.state.current_level));
             self.state.game_phase = GamePhase::Building;
             return;
         }

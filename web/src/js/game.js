@@ -3,11 +3,12 @@ import { Canvas } from "./Canvas.js";
 import { Art } from "./Art.js";
 import { clamp } from "./utils.js";
 
-export function createGameCanvas(htmlCanvas) {
+export function createGameCanvas(htmlCanvas, initialCanvasState = {}) {
   const canvas = new Canvas(htmlCanvas, {
     scale: 1.0,
     offsetX: 60,
     offsetY: 10,
+    ...initialCanvasState,
   });
 
   let startOffset = null;
@@ -66,6 +67,11 @@ export function createGameCanvas(htmlCanvas) {
     },
     getArt() {
       return gameArt;
+    },
+    getState() {
+      return {
+        canvas: canvas.getState(),
+      };
     },
   };
 }

@@ -44,18 +44,12 @@ fn create_big(level: u32) -> Spawn {
     }
 }
 
-pub fn create_levels(num_levels: u32) -> Vec<Spawn> {
-    let mut levels = vec![];
-
-    for current_level in 0..num_levels {
-        levels.push(match current_level % 4 {
-            0 => create_normal(current_level),
-            1 => create_grouped(current_level),
-            2 => create_speed(current_level),
-            3 => create_big(current_level),
-            _ => todo!(),
-        });
+pub fn create_level(current_level: u32) -> Spawn {
+    match current_level % 4 {
+        0 => create_normal(current_level),
+        1 => create_grouped(current_level),
+        2 => create_speed(current_level),
+        3 => create_big(current_level),
+        _ => todo!(),
     }
-
-    levels
 }
