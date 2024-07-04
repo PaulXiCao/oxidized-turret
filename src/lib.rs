@@ -15,7 +15,7 @@ use external::{
 use levels::create_level;
 use path::find_path;
 use recycled_list::{RecycledList, RecycledListItem, RecycledListRef};
-use spawn::{Spawn, Spawner};
+use spawn::Spawner;
 use utils::{
     distance, to_creep_position, to_float_position, to_grid_position, FloatPosition, GridPosition,
 };

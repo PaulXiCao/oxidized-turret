@@ -775,10 +775,10 @@ impl FollowsTarget for DynamicMultiData {
 
             fn normalize(pos: FloatPosition) -> FloatPosition {
                 let c = (pos.x * pos.x + pos.y * pos.y).sqrt();
-                return FloatPosition {
+                FloatPosition {
                     x: pos.x / c,
                     y: pos.y / c,
-                };
+                }
             }
             let direction = normalize(target_creep.pos - turret_pos);
 
@@ -786,24 +786,24 @@ impl FollowsTarget for DynamicMultiData {
 
             state.multi_particles.add(MultiParticle {
                 pos: turret_pos,
-                direction: direction,
+                direction,
                 damage: turret_data.damage,
                 lifetime_in_ticks: lifetime,
-                speed: speed,
+                speed,
             });
             state.multi_particles.add(MultiParticle {
                 pos: turret_pos,
                 direction: rotate(direction, 30.0),
                 damage: turret_data.damage,
                 lifetime_in_ticks: lifetime,
-                speed: speed,
+                speed,
             });
             state.multi_particles.add(MultiParticle {
                 pos: turret_pos,
                 direction: rotate(direction, -30.0),
                 damage: turret_data.damage,
                 lifetime_in_ticks: lifetime,
-                speed: speed,
+                speed,
             });
         }
     }
