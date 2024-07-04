@@ -767,10 +767,10 @@ impl FollowsTarget for DynamicMultiData {
                 let angle_radiants = PI * angle / 180.0;
                 let c = angle_radiants.cos();
                 let s = angle_radiants.sin();
-                return FloatPosition {
+                FloatPosition {
                     x: pos.x * c + pos.y * s,
                     y: pos.y * c - pos.x * s,
-                };
+                }
             }
 
             fn normalize(pos: FloatPosition) -> FloatPosition {
