@@ -301,16 +301,22 @@ const server = http.createServer(async (req, res) => {
       const message = await request.json();
       if (message.type === "build_tower") {
         game.build_tower(message.data.x, message.data.y, message.data.kind);
+      } else if (message.type === "start_wave") {
+        game.start_wave();
+      } else if (message.type === "upgrade_tower") {
+        game.upgrade_tower(message.data.id, message.data.index);
+      } else if (message.type === "sell_tower") {
+        game.sell_tower(message.data.id, message.data.index);
+      }
 
-        for (const player of Object.values(lobby.players)) {
-          const session = SESSIONS[player.id];
-          for (const connectionId of Object.keys(session.connections)) {
-            const connection = CONNECTIONS[connectionId];
-            if (!connection) {
-              console.warn(`Connection not found!`);
-            }
-            connection.write(`data: ${JSON.stringify(message)}\n\n`);
+      for (const player of Object.values(lobby.players)) {
+        const session = SESSIONS[player.id];
+        for (const connectionId of Object.keys(session.connections)) {
+          const connection = CONNECTIONS[connectionId];
+          if (!connection) {
+            console.warn(`Connection not found!`);
           }
+          connection.write(`data: ${JSON.stringify(message)}\n\n`);
         }
       }
 
