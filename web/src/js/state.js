@@ -65,6 +65,8 @@ export function createStateHandler({
           new_turret = 2;
         } else if (clickPos.y < 200) {
           new_turret = 3;
+        } else if (clickPos.y < 250) {
+          new_turret = 4;
         }
 
         if (new_turret !== null) {

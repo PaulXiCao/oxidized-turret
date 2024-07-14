@@ -2,7 +2,8 @@ use crate::recycled_list::RecycledListRef;
 use crate::utils::{to_float_position, FloatPosition};
 use crate::{
     DynamicBasicData, DynamicCannonData, DynamicMultiData, DynamicSniperData, FollowsTarget,
-    GamePhase, HasCost, SpecificData, State, Turret, BASIC, CANNON, MULTI, SNIPER,
+    GamePhase, HasCost, SpecificData, State, StaticFreezeData, Turret, BASIC, CANNON, FREEZE,
+    MULTI, SNIPER,
 };
 use wasm_bindgen::prelude::*;
 
@@ -23,18 +24,21 @@ pub fn to_external_turret(turret: &Turret, state: &State) -> ExternalTurret {
             SpecificData::Sniper(d) => d.rotation,
             SpecificData::Cannon(d) => d.rotation,
             SpecificData::Multi(d) => d.rotation,
+            SpecificData::Freeze(_) => 0.0,
         },
         range: match &turret.specific_data {
             SpecificData::Basic(d) => d.get_range(turret.general_data.level) * state.cell_length,
             SpecificData::Sniper(d) => d.get_range(turret.general_data.level) * state.cell_length,
             SpecificData::Cannon(d) => d.get_range(turret.general_data.level) * state.cell_length,
             SpecificData::Multi(d) => d.get_range(turret.general_data.level) * state.cell_length,
+            SpecificData::Freeze(d) => d.get_range(turret.general_data.level) * state.cell_length,
         },
         kind: match &turret.specific_data {
             SpecificData::Basic(_) => 0,
             SpecificData::Sniper(_) => 1,
             SpecificData::Cannon(_) => 2,
             SpecificData::Multi(_) => 3,
+            SpecificData::Freeze(_) => 4,
         },
     }
 }
@@ -49,8 +53,8 @@ fn get_cost<T: HasCost>(arr: &[T], level: usize) -> f32 {
             0
         } else {
             let mut cost = 0;
-            for j in 0..level {
-                cost += arr[j].get_cost();
+            for val in arr.iter().take(level) {
+                cost += val.get_cost();
             }
             cost
         }) as f32
@@ -153,7 +157,7 @@ impl HasStats for DynamicMultiData {
 impl HasStats for DynamicSniperData {
     fn stats(&self, level: u32) -> Vec<Stat> {
         let level = level as usize;
-        if level as usize >= SNIPER.len() {
+        if level >= SNIPER.len() {
             return vec![];
         }
 
@@ -239,6 +243,43 @@ impl HasStats for DynamicCannonData {
     }
 }
 
+impl HasStats for StaticFreezeData {
+    fn stats(&self, level: u32) -> Vec<Stat> {
+        let level = level as usize;
+        if level >= FREEZE.len() {
+            return vec![];
+        }
+
+        vec![
+            Stat {
+                key: String::from("Level"),
+                value: (level + 1) as f32,
+                unit: String::from(""),
+            },
+            Stat {
+                key: String::from("Range"),
+                value: FREEZE[level].range,
+                unit: String::from("tiles"),
+            },
+            Stat {
+                key: String::from("Freeze Percent"),
+                value: FREEZE[level].freeze_percent,
+                unit: String::from(""),
+            },
+            Stat {
+                key: String::from("Freeze  Speed"),
+                value: FREEZE[level].freeze_speed,
+                unit: String::from("/s"),
+            },
+            Stat {
+                key: String::from("Cost"),
+                value: get_cost(&FREEZE, level),
+                unit: String::from("gold"),
+            },
+        ]
+    }
+}
+
 pub fn to_external_turret_with_stats(turret: &Turret, state: &State) -> ExternalTurretWithStats {
     ExternalTurretWithStats {
         turret: to_external_turret(turret, state),
@@ -247,12 +288,14 @@ pub fn to_external_turret_with_stats(turret: &Turret, state: &State) -> External
             SpecificData::Sniper(d) => d.stats(turret.general_data.level),
             SpecificData::Cannon(d) => d.stats(turret.general_data.level),
             SpecificData::Multi(d) => d.stats(turret.general_data.level),
+            SpecificData::Freeze(d) => d.stats(turret.general_data.level),
         },
         next_stats: match turret.specific_data {
             SpecificData::Basic(d) => d.stats(turret.general_data.level + 1),
             SpecificData::Sniper(d) => d.stats(turret.general_data.level + 1),
             SpecificData::Cannon(d) => d.stats(turret.general_data.level + 1),
             SpecificData::Multi(d) => d.stats(turret.general_data.level + 1),
+            SpecificData::Freeze(d) => d.stats(turret.general_data.level + 1),
         },
     }
 }

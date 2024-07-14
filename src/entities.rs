@@ -12,7 +12,7 @@ use crate::{
 #[derive(Clone, Copy)]
 pub struct WalkingProgress {
     pub current_goal: u32,
-    pub steps_taken: u32,
+    pub progress_made: f32,
 }
 
 #[derive(Copy, Clone)]
@@ -30,9 +30,13 @@ pub struct Creep {
     pub health: f32,
     pub max_health: f32,
     pub walking: WalkingProgress,
-    pub speed: u32, // no. of ticks to walk one grid cell, lower is faster
+    pub speed: f32, // 1 / num_ticks to walk one grid cell
     pub gold: u32,
     pub kind: CreepKind,
+    pub last_freeze_percent: f32,
+    pub max_freeze_percent: f32,
+    pub delta_speed: f32,            //temporary variable
+    pub slow_speed_accumulated: f32, // needs to be subtracted from speed to get current speed
 }
 
 pub trait HasCost {
@@ -837,12 +841,134 @@ impl FollowsTarget for DynamicMultiData {
     }
 }
 
+#[derive(Copy, Clone, Default)]
+pub struct StaticFreezeData {
+    pub range: f32, // tiles
+    pub freeze_percent: f32,
+    pub freeze_speed: f32,
+    pub cost: u32,
+}
+
+impl HasCost for StaticFreezeData {
+    fn get_cost(&self) -> u32 {
+        self.cost
+    }
+}
+
+// pub const FREEZE_TUPLES: [(f32, u32, u32, u32); 11] = [
+//     (2.000, 15, 12, 80),
+//     (2.125, 18, 14, 21),
+//     (2.25, 20, 16, 70),
+//     (2.40, 23, 18, 110),
+//     (2.40, 25, 20, 170),
+//     (2.55, 27, 22, 270),
+//     (2.65, 29, 24, 420),
+//     (2.80, 31, 26, 650),
+//     (3.00, 33, 28, 1050),
+//     (3.00, 35, 30, 1700),
+//     (3.20, 38, 32, 2700),
+// ];
+
+// The following was an attempt to have a table view of the data.
+// unfortunately it didn't work
+// const fn freeze_tuple_to_data(tpls: &[(f32, u32, u32, u32)]) -> [StaticFreezeData; 11] {
+//     let mut arr: [StaticFreezeData; 11] = Default::default();
+//
+//     for (i, (range, freeze_percent, freeze_speed, cost)) in tpls.into_iter().enumerate() {
+//         arr[i] = StaticFreezeData {
+//             range: *range,
+//             freeze_percent: *freeze_percent as f32 / 100.0,
+//             freeze_speed: *freeze_speed as f32 * FREEZE_SPEED_FACTOR,
+//             cost: *cost,
+//         }
+//     }
+//     arr
+// }
+
+const FREEZE_SPEED_FACTOR: f32 = 0.001 / 60.0;
+
+pub const FREEZE: [StaticFreezeData; 11] = [
+    StaticFreezeData {
+        range: 2.000,
+        freeze_percent: 0.15,
+        freeze_speed: 12.0 * FREEZE_SPEED_FACTOR,
+        cost: 80,
+    },
+    StaticFreezeData {
+        range: 2.125,
+        freeze_percent: 0.18,
+        freeze_speed: 14.0 * FREEZE_SPEED_FACTOR,
+        cost: 21,
+    },
+    StaticFreezeData {
+        range: 2.25,
+        freeze_percent: 0.20,
+        freeze_speed: 16.0 * FREEZE_SPEED_FACTOR,
+        cost: 70,
+    },
+    StaticFreezeData {
+        range: 2.40,
+        freeze_percent: 0.23,
+        freeze_speed: 18.0 * FREEZE_SPEED_FACTOR,
+        cost: 110,
+    },
+    StaticFreezeData {
+        range: 2.40,
+        freeze_percent: 0.25,
+        freeze_speed: 20.0 * FREEZE_SPEED_FACTOR,
+        cost: 170,
+    },
+    StaticFreezeData {
+        range: 2.55,
+        freeze_percent: 0.27,
+        freeze_speed: 22.0 * FREEZE_SPEED_FACTOR,
+        cost: 270,
+    },
+    StaticFreezeData {
+        range: 2.65,
+        freeze_percent: 0.29,
+        freeze_speed: 24.0 * FREEZE_SPEED_FACTOR,
+        cost: 420,
+    },
+    StaticFreezeData {
+        range: 2.80,
+        freeze_percent: 0.31,
+        freeze_speed: 26.0 * FREEZE_SPEED_FACTOR,
+        cost: 650,
+    },
+    StaticFreezeData {
+        range: 3.00,
+        freeze_percent: 0.33,
+        freeze_speed: 28.0 * FREEZE_SPEED_FACTOR,
+        cost: 1050,
+    },
+    StaticFreezeData {
+        range: 3.00,
+        freeze_percent: 0.35,
+        freeze_speed: 30.0 * FREEZE_SPEED_FACTOR,
+        cost: 1700,
+    },
+    StaticFreezeData {
+        range: 3.20,
+        freeze_percent: 0.38,
+        freeze_speed: 32.0 * FREEZE_SPEED_FACTOR,
+        cost: 2700,
+    },
+];
+
+impl StaticFreezeData {
+    pub fn get_range(&self, level: u32) -> f32 {
+        FREEZE[level as usize].range
+    }
+}
+
 #[derive(Copy, Clone)]
 pub enum SpecificData {
     Basic(DynamicBasicData),
     Sniper(DynamicSniperData), // fixme: create SniperData and use here
     Cannon(DynamicCannonData),
     Multi(DynamicMultiData),
+    Freeze(StaticFreezeData),
 }
 
 #[derive(Copy, Clone)]
@@ -850,6 +976,12 @@ pub struct GeneralData {
     pub pos: GridPosition,
     pub last_shot: u32,
     pub level: u32,
+}
+
+impl GeneralData {
+    pub fn get_float_pos(&self, cell_length: f32) -> FloatPosition {
+        to_creep_position(self.pos, cell_length)
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -945,6 +1077,7 @@ impl Turret {
             SpecificData::Sniper(specific_data) => update_tower(general_data, specific_data, state),
             SpecificData::Cannon(specific_data) => update_tower(general_data, specific_data, state),
             SpecificData::Multi(specific_data) => update_tower(general_data, specific_data, state),
+            SpecificData::Freeze(_specific_data) => {}
         }
     }
 }

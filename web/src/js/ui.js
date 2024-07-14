@@ -62,6 +62,20 @@ function drawMultiTurret(uiCanvas, uiArt, uiState) {
   uiCanvas.fillText(5, 194, "90", "black", 12);
 }
 
+function drawFreezeTurret(uiCanvas, uiArt, uiState) {
+  // draw selection
+  if (uiState.selectedTurret === 4) {
+    uiCanvas.fillRect(0, 200, 50, 50, "green");
+  }
+
+  // draw icon
+  uiArt.drawTurret(10, 210, 90, 30, 4);
+
+  // draw price
+  uiCanvas.fillCircle(12, 240, 9, "gray");
+  uiCanvas.fillText(5, 244, "80", "black", 12);
+}
+
 function round(num) {
   return Math.round(num * 10) / 10;
 }
@@ -89,6 +103,7 @@ export function createUi({
       drawSniperTurret(uiCanvas, uiArt, uiState);
       drawCannonTurret(uiCanvas, uiArt, uiState);
       drawMultiTurret(uiCanvas, uiArt, uiState);
+      drawFreezeTurret(uiCanvas, uiArt, uiState);
 
       if (uiState.selectedTower) {
         /** @type {TurretRef} */

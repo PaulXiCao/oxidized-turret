@@ -215,6 +215,7 @@ impl Game {
             1 => SNIPER[0].cost,
             2 => CANNON[0].cost,
             3 => MULTI[0].cost,
+            4 => FREEZE[0].cost,
             _ => panic!("gotcha! tower kind not implemented!"),
         };
 
@@ -264,6 +265,7 @@ impl Game {
                     rotation: 0.0,
                     target: RecycledListRef::null_ref(),
                 }),
+                4 => SpecificData::Freeze(FREEZE[0]),
                 _ => panic!("gotcha! tower kind not implemented!"),
             },
         });
@@ -308,15 +310,13 @@ impl Game {
             SpecificData::Sniper(_) => self.state.gold += SNIPER[0].cost,
             SpecificData::Cannon(_) => self.state.gold += CANNON[0].cost,
             SpecificData::Multi(_) => self.state.gold += MULTI[0].cost,
+            SpecificData::Freeze(_) => self.state.gold += FREEZE[0].cost,
         }
         self.turret_state.remove(turret_ref);
 
         // update creep path
-        match compute_creep_paths(self) {
-            Some(p) => {
-                self.state.creep_path = p;
-            }
-            None => {}
+        if let Some(p) = compute_creep_paths(self) {
+            self.state.creep_path = p;
         }
     }
 
@@ -332,6 +332,7 @@ impl Game {
             SpecificData::Sniper(_) => SNIPER.len(),
             SpecificData::Cannon(_) => CANNON.len(),
             SpecificData::Multi(_) => MULTI.len(),
+            SpecificData::Freeze(_) => FREEZE.len(),
         };
         let next_level = (tower.general_data.level + 1) as usize;
         if next_level >= max_level {
@@ -343,6 +344,7 @@ impl Game {
             SpecificData::Sniper(_) => SNIPER[next_level].cost,
             SpecificData::Cannon(_) => CANNON[next_level].cost,
             SpecificData::Multi(_) => MULTI[next_level].cost,
+            SpecificData::Freeze(_) => FREEZE[next_level].cost,
         };
 
         if self.state.gold < cost {
@@ -373,13 +375,58 @@ impl Game {
             self.state.creeps.add(creep);
         }
 
+        // Reset freeze on all creepsa
+        for creep in self.state.creeps.iter_mut() {
+            creep.max_freeze_percent = 0.0;
+            creep.delta_speed = -0.002 / 60.0; //creeps recover a fixed amount of 15 per second
+        }
+        for turret in self.turret_state.iter() {
+            if let SpecificData::Freeze(turret_data) = turret.specific_data {
+                for creep in self.state.creeps.iter_mut().filter(|the_creep| {
+                    distance(
+                        the_creep.pos,
+                        turret.general_data.get_float_pos(self.state.cell_length),
+                    ) <= turret_data.range * self.state.cell_length
+                }) {
+                    creep.max_freeze_percent =
+                        f32::max(creep.max_freeze_percent, turret_data.freeze_percent);
+                    // only reduce speed further if new freeze is more intense
+                    if creep.last_freeze_percent < creep.max_freeze_percent {
+                        creep.delta_speed = f32::max(creep.delta_speed, turret_data.freeze_speed);
+                    }
+                }
+            }
+            // match turret.specific_data {
+            //     SpecificData::Freeze(turret_data) => {
+
+            //     }
+            //     _ => {}
+            // }
+        }
+        // Set delta speed of all creeps
+        for creep in self.state.creeps.iter_mut() {
+            if creep.delta_speed == 0.0 {
+                continue;
+            }
+            if creep.delta_speed < 0.0 {
+                creep.slow_speed_accumulated =
+                    f32::max(0.0, creep.slow_speed_accumulated + creep.delta_speed);
+            } else {
+                creep.slow_speed_accumulated = f32::min(
+                    creep.speed * creep.max_freeze_percent,
+                    creep.slow_speed_accumulated + creep.delta_speed,
+                );
+            }
+            creep.last_freeze_percent = creep.slow_speed_accumulated / creep.speed;
+        }
+
         let mut creeps_to_remove: Vec<RecycledListRef> = vec![];
         for creep_item in self.state.creeps.enumerate_mut() {
             let creep = &mut creep_item.data;
-            creep.walking.steps_taken += 1;
-            if creep.walking.steps_taken >= creep.speed {
+            creep.walking.progress_made += creep.speed - creep.slow_speed_accumulated;
+            if creep.walking.progress_made >= 1.0 {
                 creep.walking.current_goal += 1;
-                creep.walking.steps_taken = 0;
+                creep.walking.progress_made = 0.0;
             }
             if creep.walking.current_goal == self.state.creep_path.len() as u32 - 1 {
                 creeps_to_remove.push(creep_item.item_ref);
@@ -390,13 +437,12 @@ impl Game {
                 }
                 continue;
             }
-
+            // update creep position
             {
-                let t = creep.walking.steps_taken as f32 / creep.speed as f32;
                 let path = &self.state.creep_path;
                 let a = path[creep.walking.current_goal as usize];
                 let b = path[creep.walking.current_goal as usize + 1];
-                let pos = a * (1.0 - t) + b * t;
+                let pos = a * (1.0 - creep.walking.progress_made) + b * creep.walking.progress_made;
                 creep.pos = pos;
             }
         }

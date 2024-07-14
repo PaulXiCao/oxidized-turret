@@ -5,7 +5,7 @@ pub struct Spawn {
     pub quantity: u32,
     pub distance_in_ticks: u32,
     pub health: f32,
-    pub speed: u32,
+    pub speed: f32,
     pub bounty: u32, // bounty for the whole spawn. per creep this is bounty / quantity
     pub kind: CreepKind,
 }
@@ -44,11 +44,15 @@ impl Spawner {
                 max_health: self.spawn.health * scaling,
                 walking: WalkingProgress {
                     current_goal: 0,
-                    steps_taken: 0,
+                    progress_made: 0.0,
                 },
                 speed: self.spawn.speed,
                 gold: self.spawn.bounty,
                 kind: self.spawn.kind,
+                last_freeze_percent: 0.0,
+                delta_speed: 0.0,
+                slow_speed_accumulated: 0.0,
+                max_freeze_percent: 0.0,
             });
         }
         None

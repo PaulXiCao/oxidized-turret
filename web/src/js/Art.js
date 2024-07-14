@@ -14,20 +14,28 @@ export class Art {
   }
 
   drawTurret(x, y, rotation, size, type) {
-    let turretColor = ["yellow", "red", "cyan", "green"][type];
+    let turretColor = ["yellow", "red", "cyan", "green", "blue"][type];
     const ctx = this.canvas.canvas.getContext("2d");
     let lineWidth = ctx.lineWidth;
     ctx.lineWidth = 3;
     this.canvas.strokeRect(x + 2, y + 2, size - 4, size - 4, turretColor);
-
-    const cannonLength = size / 2;
-    this.canvas.drawLine(
-      x + cannonLength,
-      y + cannonLength,
-      x + cannonLength * (1 + Math.cos(rotation)),
-      y + cannonLength * (1 + Math.sin(rotation)),
-      turretColor
-    );
+    if (type === 4) {
+      this.canvas.fillCircle(
+        x + 2 + (size - 4) / 2,
+        y + 2 + (size - 4) / 2,
+        size / 4,
+        turretColor
+      );
+    } else {
+      const cannonLength = size / 2;
+      this.canvas.drawLine(
+        x + cannonLength,
+        y + cannonLength,
+        x + cannonLength * (1 + Math.cos(rotation)),
+        y + cannonLength * (1 + Math.sin(rotation)),
+        turretColor
+      );
+    }
     ctx.lineWidth = lineWidth;
   }
 
