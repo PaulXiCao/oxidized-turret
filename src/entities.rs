@@ -35,6 +35,10 @@ pub struct Creep {
     pub kind: CreepKind,
 }
 
+pub trait HasCost {
+    fn get_cost(&self) -> u32;
+}
+
 #[derive(Copy, Clone)]
 pub struct StaticBasicData {
     pub range: f32, // tiles
@@ -44,6 +48,12 @@ pub struct StaticBasicData {
     pub projectile_speed: f32,  // tiles/s
     pub damage_multiplier: f32, // 100% = normal damage
     pub cost: u32,
+}
+
+impl HasCost for StaticBasicData {
+    fn get_cost(&self) -> u32 {
+        self.cost
+    }
 }
 
 pub const BASIC: [StaticBasicData; 11] = [
@@ -225,6 +235,12 @@ pub struct StaticSniperData {
     pub crit_chance: f32,
     pub crit_multiplier: f32,
     pub cost: u32,
+}
+
+impl HasCost for StaticSniperData {
+    fn get_cost(&self) -> u32 {
+        self.cost
+    }
 }
 
 pub const SNIPER: [StaticSniperData; 11] = [
@@ -428,6 +444,12 @@ pub struct StaticCannonData {
     pub cost: u32,
 }
 
+impl HasCost for StaticCannonData {
+    fn get_cost(&self) -> u32 {
+        self.cost
+    }
+}
+
 pub const CANNON: [StaticCannonData; 11] = [
     // 0
     StaticCannonData {
@@ -604,6 +626,12 @@ pub struct StaticMultiData {
     pub rotation_speed: f32,   // deg/s
     pub projectile_speed: f32, // tiles/s
     pub cost: u32,
+}
+
+impl HasCost for StaticMultiData {
+    fn get_cost(&self) -> u32 {
+        self.cost
+    }
 }
 
 pub const MULTI: [StaticMultiData; 11] = [

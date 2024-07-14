@@ -2,7 +2,7 @@ use crate::recycled_list::RecycledListRef;
 use crate::utils::{to_float_position, FloatPosition};
 use crate::{
     DynamicBasicData, DynamicCannonData, DynamicMultiData, DynamicSniperData, FollowsTarget,
-    GamePhase, SpecificData, State, Turret, BASIC, CANNON, MULTI, SNIPER,
+    GamePhase, HasCost, SpecificData, State, Turret, BASIC, CANNON, MULTI, SNIPER,
 };
 use wasm_bindgen::prelude::*;
 
@@ -43,9 +43,23 @@ pub trait HasStats {
     fn stats(&self, level: u32) -> Vec<Stat>;
 }
 
+fn get_cost<T: HasCost>(arr: &[T], level: usize) -> f32 {
+    (arr[level].get_cost()
+        + if level == 0 {
+            0
+        } else {
+            let mut cost = 0;
+            for j in 0..level {
+                cost += arr[j].get_cost();
+            }
+            cost
+        }) as f32
+}
+
 impl HasStats for DynamicBasicData {
     fn stats(&self, level: u32) -> Vec<Stat> {
-        if level as usize >= BASIC.len() {
+        let level = level as usize;
+        if level >= BASIC.len() {
             return vec![];
         }
 
@@ -57,28 +71,33 @@ impl HasStats for DynamicBasicData {
             },
             Stat {
                 key: String::from("Range"),
-                value: BASIC[level as usize].range,
+                value: BASIC[level].range,
                 unit: String::from("tiles"),
             },
             Stat {
                 key: String::from("Damage"),
-                value: BASIC[level as usize].damage,
+                value: BASIC[level].damage,
                 unit: String::from(""),
             },
             Stat {
                 key: String::from("Attack speed"),
-                value: BASIC[level as usize].attack_speed,
+                value: BASIC[level].attack_speed,
                 unit: String::from("/s"),
             },
             Stat {
                 key: String::from("Rotation speed"),
-                value: BASIC[level as usize].rotation_speed,
+                value: BASIC[level].rotation_speed,
                 unit: String::from("deg/s"),
             },
             Stat {
                 key: String::from("Projectile Speed"),
-                value: BASIC[level as usize].projectile_speed,
+                value: BASIC[level].projectile_speed,
                 unit: String::from("tiles/s"),
+            },
+            Stat {
+                key: String::from("Cost"),
+                value: get_cost(&BASIC, level),
+                unit: String::from("gold"),
             },
         ]
     }
@@ -86,7 +105,8 @@ impl HasStats for DynamicBasicData {
 
 impl HasStats for DynamicMultiData {
     fn stats(&self, level: u32) -> Vec<Stat> {
-        if level as usize >= MULTI.len() {
+        let level = level as usize;
+        if level >= MULTI.len() {
             return vec![];
         }
 
@@ -98,28 +118,33 @@ impl HasStats for DynamicMultiData {
             },
             Stat {
                 key: String::from("Range"),
-                value: MULTI[level as usize].range,
+                value: MULTI[level].range,
                 unit: String::from("tiles"),
             },
             Stat {
                 key: String::from("Damage"),
-                value: MULTI[level as usize].damage,
+                value: MULTI[level].damage,
                 unit: String::from(""),
             },
             Stat {
                 key: String::from("Attack speed"),
-                value: MULTI[level as usize].attack_speed,
+                value: MULTI[level].attack_speed,
                 unit: String::from("/s"),
             },
             Stat {
                 key: String::from("Rotation speed"),
-                value: MULTI[level as usize].rotation_speed,
+                value: MULTI[level].rotation_speed,
                 unit: String::from("deg/s"),
             },
             Stat {
                 key: String::from("Projectile Speed"),
-                value: MULTI[level as usize].projectile_speed,
+                value: MULTI[level].projectile_speed,
                 unit: String::from("tiles/s"),
+            },
+            Stat {
+                key: String::from("Cost"),
+                value: get_cost(&MULTI, level),
+                unit: String::from("gold"),
             },
         ]
     }
@@ -127,6 +152,7 @@ impl HasStats for DynamicMultiData {
 
 impl HasStats for DynamicSniperData {
     fn stats(&self, level: u32) -> Vec<Stat> {
+        let level = level as usize;
         if level as usize >= SNIPER.len() {
             return vec![];
         }
@@ -139,28 +165,33 @@ impl HasStats for DynamicSniperData {
             },
             Stat {
                 key: String::from("Range"),
-                value: SNIPER[level as usize].range,
+                value: SNIPER[level].range,
                 unit: String::from("tiles"),
             },
             Stat {
                 key: String::from("Damage"),
-                value: SNIPER[level as usize].damage,
+                value: SNIPER[level].damage,
                 unit: String::from(""),
             },
             Stat {
                 key: String::from("Attack Speed"),
-                value: SNIPER[level as usize].attack_speed,
+                value: SNIPER[level].attack_speed,
                 unit: String::from("/s"),
             },
             Stat {
                 key: String::from("Rotation speed"),
-                value: SNIPER[level as usize].rotation_speed,
+                value: SNIPER[level].rotation_speed,
                 unit: String::from("deg/s"),
             },
             Stat {
                 key: String::from("Aiming speed"),
-                value: SNIPER[level as usize].aiming_speed,
+                value: SNIPER[level].aiming_speed,
                 unit: String::from("%/s"),
+            },
+            Stat {
+                key: String::from("Cost"),
+                value: get_cost(&SNIPER, level),
+                unit: String::from("gold"),
             },
         ]
     }
@@ -168,7 +199,8 @@ impl HasStats for DynamicSniperData {
 
 impl HasStats for DynamicCannonData {
     fn stats(&self, level: u32) -> Vec<Stat> {
-        if level as usize >= CANNON.len() {
+        let level = level as usize;
+        if level >= CANNON.len() {
             return vec![];
         }
 
@@ -180,23 +212,28 @@ impl HasStats for DynamicCannonData {
             },
             Stat {
                 key: String::from("Range"),
-                value: CANNON[level as usize].range,
+                value: CANNON[level].range,
                 unit: String::from("tiles"),
             },
             Stat {
                 key: String::from("Damage"),
-                value: CANNON[level as usize].damage,
+                value: CANNON[level].damage,
                 unit: String::from(""),
             },
             Stat {
                 key: String::from("Attack Speed"),
-                value: CANNON[level as usize].attack_speed,
+                value: CANNON[level].attack_speed,
                 unit: String::from("/s"),
             },
             Stat {
                 key: String::from("Rotation speed"),
-                value: CANNON[level as usize].rotation_speed,
+                value: CANNON[level].rotation_speed,
                 unit: String::from("deg/s"),
+            },
+            Stat {
+                key: String::from("Cost"),
+                value: get_cost(&CANNON, level),
+                unit: String::from("gold"),
             },
         ]
     }
