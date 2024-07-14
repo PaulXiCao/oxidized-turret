@@ -14,6 +14,10 @@ function drawBasicTurret(uiCanvas, uiArt, uiState) {
 
   // draw icon
   uiArt.drawTurret(10, 10, 0, 30, 0);
+
+  // draw price
+  uiCanvas.fillCircle(12, 40, 9, "gray");
+  uiCanvas.fillText(5, 44, "20", "black", 12);
 }
 
 function drawSniperTurret(uiCanvas, uiArt, uiState) {
@@ -24,6 +28,10 @@ function drawSniperTurret(uiCanvas, uiArt, uiState) {
 
   // draw icon
   uiArt.drawTurret(10, 60, 10, 30, 1);
+
+  // draw price
+  uiCanvas.fillCircle(12, 90, 9, "gray");
+  uiCanvas.fillText(5, 94, "80", "black", 12);
 }
 
 function drawCannonTurret(uiCanvas, uiArt, uiState) {
@@ -34,6 +42,10 @@ function drawCannonTurret(uiCanvas, uiArt, uiState) {
 
   // draw icon
   uiArt.drawTurret(10, 110, 90, 30, 2);
+
+  // draw price
+  uiCanvas.fillCircle(12, 140, 9, "gray");
+  uiCanvas.fillText(5, 144, "60", "black", 12);
 }
 
 function drawMultiTurret(uiCanvas, uiArt, uiState) {
@@ -44,6 +56,10 @@ function drawMultiTurret(uiCanvas, uiArt, uiState) {
 
   // draw icon
   uiArt.drawTurret(10, 160, 90, 30, 3);
+
+  // draw price
+  uiCanvas.fillCircle(12, 190, 9, "gray");
+  uiCanvas.fillText(5, 194, "90", "black", 12);
 }
 
 function round(num) {
@@ -129,9 +145,6 @@ export function createUi({
       } else {
         towerDetailSidebar.style.display = "none";
       }
-
-      uiCanvas.fillCircle(10, 40, 7, "gray");
-      uiCanvas.fillText(7, 44, "1", "black", 12);
 
       health.innerText = `Health: ${uiState.health}`;
       wave.innerText = `Wave: ${uiState.wave}`;
