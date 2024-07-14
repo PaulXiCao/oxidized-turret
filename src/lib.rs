@@ -310,6 +310,14 @@ impl Game {
             SpecificData::Multi(_) => self.state.gold += MULTI[0].cost,
         }
         self.turret_state.remove(turret_ref);
+
+        // update creep path
+        match compute_creep_paths(self) {
+            Some(p) => {
+                self.state.creep_path = p;
+            }
+            None => {}
+        }
     }
 
     pub fn upgrade_tower(&mut self, turret_ref: RecycledListRef) {
