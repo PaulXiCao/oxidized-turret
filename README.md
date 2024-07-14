@@ -76,15 +76,15 @@ wasm-pack build --out-dir web/src/wasm
     - [x] basic
     - [x] sniper
     - [ ] sniper crit (shared, deterministic random function with seed)
-    - [ ] splash
-    - [ ] freeze
+    - [x] splash
+    - [x] freeze
     - [ ] aoe
     - [ ] ... see https://infinitode-2.fandom.com/wiki/Towers
   - [ ] targeting strategy
   - [ ] research
   - [ ] experience
-  - [ ] upgrade
-  - [ ] sell
+  - [x] upgrade
+  - [x] sell
 
 ### js frontend
 
@@ -94,13 +94,13 @@ wasm-pack build --out-dir web/src/wasm
 - [x] Simple Tower Building UI
 - [x] display path of creeps
 - [x] display score, health, current level, and game resolution (who won)
-- [ ] display tower range on click
+- [x] display tower range on click
 - [ ] higher frame rates than 60 FPS
 - [ ] support mobile devices (drag, pinch zoom, ...)
-- [ ] remove towers
+- [x] remove towers
 - [x] intermediate goals: implementing multiple intermediate goals broke path offsetting (into cell center) and (intermediate) goal(s) are not shown anymore
 - [ ] highscore list (+ database?)
 
 ### Other
 
-- [ ] configure github pages deployment
+- [x] configure github pages deployment
