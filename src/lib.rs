@@ -298,7 +298,13 @@ impl Game {
         })
     }
 
-    pub fn sell_tower(&mut self, turret_ref: RecycledListRef) {
+    pub fn sell_tower(&mut self, id: u32, index: usize) {
+        if let GamePhase::Fighting = self.state.game_phase {
+            return;
+        }
+
+        let turret_ref = RecycledListRef { id, index };
+
         let tower_option = self.turret_state.get(turret_ref);
         if tower_option.is_none() {
             return;
@@ -320,7 +326,12 @@ impl Game {
         }
     }
 
-    pub fn upgrade_tower(&mut self, turret_ref: RecycledListRef) {
+    pub fn upgrade_tower(&mut self, id: u32, index: usize) {
+        if let GamePhase::Fighting = self.state.game_phase {
+            return;
+        }
+
+        let turret_ref = RecycledListRef { id, index };
         let tower_option = self.turret_state.get_mut(turret_ref);
         if tower_option.is_none() {
             return;

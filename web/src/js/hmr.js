@@ -1,7 +1,18 @@
 import { initGame } from "./main.js";
 
+let receiveMessage = undefined;
+async function sendMessage(message) {
+  receiveMessage(message);
+}
+
+const wasmPath = "./wasm/oxidized_turret_bg.wasm";
+
 if (document.location.port !== "8080") {
-  await initGame();
+  const { receiveMessage: _receiveMessage } = await initGame({
+    sendMessage,
+    wasmPath,
+  });
+  receiveMessage = _receiveMessage;
 } else {
   /**
    * Setup Hot-Module-Reloading
@@ -23,7 +34,14 @@ if (document.location.port !== "8080") {
 
     const getRequest = objectStore.get("state");
     getRequest.onsuccess = async (event) => {
-      getState = await initGame(getRequest.result);
+      const { getState: _getState, receiveMessage: _receiveMessage } =
+        await initGame({
+          state: getRequest.result,
+          sendMessage,
+          wasmPath,
+        });
+      receiveMessage = _receiveMessage;
+      getState = _getState;
     };
     getRequest.onerror = (event) => {
       console.log("error while retrieving", event);

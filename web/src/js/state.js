@@ -19,6 +19,7 @@ export function createStateHandler({
   gameEngine,
   gameCanvas,
   ui,
+  sendMessage,
   art,
   initialUiState = {},
 }) {
@@ -81,11 +82,14 @@ export function createStateHandler({
 
       if (clickPos.x > 50 && uiState.selectedTurret !== null) {
         const canvasPos = gameCanvas.realToCanvas(clickPos);
-        gameEngine.build_tower(
-          canvasPos.x,
-          canvasPos.y,
-          uiState.selectedTurret
-        );
+        sendMessage({
+          type: "build_tower",
+          data: {
+            x: canvasPos.x,
+            y: canvasPos.y,
+            kind: uiState.selectedTurret,
+          },
+        });
       }
 
       if (clickPos.x > 50 && uiState.selectedTurret === null) {
@@ -142,7 +146,7 @@ export function createStateHandler({
       uiState.animationSpeed = Math.max(uiState.animationSpeed - 1, 0);
     },
     handleStartButton() {
-      gameEngine.start_wave();
+      sendMessage({ type: "start_wave" });
     },
     handleSidebarClose() {
       uiState.selectedTower = null;
@@ -152,7 +156,13 @@ export function createStateHandler({
       if (!uiState.selectedTower) {
         return;
       }
-      gameEngine.sell_tower(uiState.selectedTower.turret_ref);
+      /** @type {wasm.RecycledListRef} */
+      const ref = uiState.selectedTower.turret_ref;
+      sendMessage({
+        type: "sell_tower",
+        data: { id: ref.id, index: ref.index },
+      });
+
       uiState.selectedTower = null;
     },
     handleTowerUpgrade() {
@@ -162,7 +172,12 @@ export function createStateHandler({
 
       // two click upgrading
       if (uiState.upgrading) {
-        gameEngine.upgrade_tower(uiState.selectedTower.turret_ref);
+        /** @type {wasm.RecycledListRef} */
+        const ref = uiState.selectedTower.turret_ref;
+        sendMessage({
+          type: "upgrade_tower",
+          data: { id: ref.id, index: ref.index },
+        });
         uiState.selectedTower = gameEngine.get_tower_by_ref(
           uiState.selectedTower.turret_ref
         );

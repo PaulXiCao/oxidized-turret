@@ -8,7 +8,7 @@ import { createUi } from "./ui.js";
 import * as wasm from "../wasm/oxidized_turret_bg.js";
 import { createStateHandler } from "./state.js";
 
-export async function initGame(state = {}) {
+export async function initGame({ wasmPath, sendMessage, state = {} }) {
   const { game, jsState, memory: memoryBuffer } = state;
 
   const memory = new WebAssembly.Memory({
@@ -33,15 +33,14 @@ export async function initGame(state = {}) {
   };
 
   let wasmObj = null;
-  await WebAssembly.instantiateStreaming(
-    fetch("./wasm/oxidized_turret_bg.wasm"),
-    importObject
-  ).then((obj) => {
-    // expose WASM exports to JavaScript bindings
-    wasm.__wbg_set_wasm(obj.instance.exports);
-    window.wasm = wasm;
-    wasmObj = obj;
-  });
+  await WebAssembly.instantiateStreaming(fetch(wasmPath), importObject).then(
+    (obj) => {
+      // expose WASM exports to JavaScript bindings
+      wasm.__wbg_set_wasm(obj.instance.exports);
+      window.wasm = wasm;
+      wasmObj = obj;
+    }
+  );
 
   // disable browser zoom with keyboard and mouse
   window.addEventListener("keydown", function disableKeyboardZoom(event) {
@@ -92,6 +91,7 @@ export async function initGame(state = {}) {
     gameEngine,
     gameCanvas,
     ui,
+    sendMessage,
     initialUiState: jsState?.uiState,
   });
 
@@ -112,6 +112,18 @@ export async function initGame(state = {}) {
       stateHandler.handleSidebarClose();
     }
   });
+
+  function receiveMessage(message) {
+    if (message.type === "build_tower") {
+      gameEngine.build_tower(message.data.x, message.data.y, message.data.kind);
+    } else if (message.type === "start_wave") {
+      gameEngine.start_wave();
+    } else if (message.type === "upgrade_tower") {
+      gameEngine.upgrade_tower(message.data.id, message.data.index);
+    } else if (message.type === "sell_tower") {
+      gameEngine.sell_tower(message.data.id, message.data.index);
+    }
+  }
 
   let lastPointerDown = null;
   let isDragging = false;
@@ -185,11 +197,14 @@ export async function initGame(state = {}) {
 
   requestAnimationFrame(loop);
 
-  return function getState() {
-    return {
-      game: gameEngine,
-      memory: wasmObj.instance.exports.memory.buffer,
-      jsState: stateHandler.getState(),
-    };
+  return {
+    getState() {
+      return {
+        game: gameEngine,
+        memory: wasmObj.instance.exports.memory.buffer,
+        jsState: stateHandler.getState(),
+      };
+    },
+    receiveMessage,
   };
 }

@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 #[derive(Clone, Copy)]
 pub struct RecycledListRef {
     pub id: u32,
-    index: usize,
+    pub index: usize,
 }
 
 impl RecycledListRef {
